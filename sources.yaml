@@ -1,0 +1,16 @@
+# Domains treated as trusted. Off-list sources are still cited, but marked
+# "not an official source" in the doc so review is one glance, not a hunt.
+trusted:
+  - docs.anthropic.com
+  - platform.openai.com
+  - ai.google.dev
+  - ai.pydantic.dev
+  - docs.pydantic.dev
+  - python.langchain.com
+  - docs.llamaindex.ai
+  - huggingface.co
+  - arxiv.org
+  - github.com
+  - docs.python.org
+  - modelcontextprotocol.io
+  - openrouter.ai

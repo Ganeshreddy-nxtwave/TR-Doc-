@@ -1,0 +1,4 @@
+# Normalise line endings so the repo does not appear wholly modified on a
+# machine with different defaults.
+* text=auto eol=lf
+*.pptx binary

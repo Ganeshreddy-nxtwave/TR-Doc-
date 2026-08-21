@@ -1,0 +1,10 @@
+# Session slide decks by URL, one per line. Blank lines and # comments ignored.
+#
+# Works with:
+#   - direct .pptx URLs                 https://example.com/session-04.pptx
+#   - Google Slides with link-sharing   https://docs.google.com/presentation/d/<ID>/edit
+#
+# A Google Slides link that is NOT shared returns a sign-in page, not a deck.
+# That is detected and reported rather than silently ingested as garbage.
+#
+# Downloads are cached in .cache/ -- delete a cached file to re-fetch it.

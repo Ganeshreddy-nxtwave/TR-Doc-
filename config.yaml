@@ -1,0 +1,26 @@
+# OpenRouter. API key comes from the OPENROUTER_API_KEY env var, never this file.
+base_url: https://openrouter.ai/api/v1
+
+models:
+  # VERIFY these slugs at https://openrouter.ai/models before the first run.
+  # ponytail: not auto-detected -- a wrong slug fails loudly on call 1, which is fine.
+  writer: anthropic/claude-opus-4.1      # long-form doc generation
+  research: perplexity/sonar-reasoning   # web search pass
+  checker: anthropic/claude-sonnet-4.5   # self-check pass
+
+# Paths
+corpus_ppts: corpus/ppts
+corpus_tr_docs: corpus/tr_docs
+style_guide: style-guide.md
+baseline: baseline.md    # hand-written student knowledge baseline
+work_dir: work
+out_dir: out
+
+# Snippet execution (Rule 5)
+run_timeout_seconds: 30
+
+# Execute the model's offline Python to capture real output. True is right on
+# your own machine. The Streamlit app ignores this and decides for itself: it
+# executes nothing unless TR_LOCAL=1 is set, so a hosted deployment never runs
+# generated code.
+execute_snippets: true

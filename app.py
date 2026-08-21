@@ -13,7 +13,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from tr import corpus, pipeline
+from tr import corpus, generate, pipeline
 from tr.cli import (LEARNER_PROFILES, PRODUCES, describe,
                     discover_courses, slugify)
 
@@ -45,13 +45,20 @@ def running_hosted():
 
 
 def load_api_key():
-    """Secrets first (hosted), then the environment (local)."""
+    """Secrets first (hosted), then the environment, then .env (local).
+
+    The .env step matters: generate.client() reads it, but that runs long after
+    the sidebar has already decided whether a key exists -- so without this the
+    app reports "No OPENROUTER_API_KEY" locally despite a valid .env file.
+    """
     try:
         if "OPENROUTER_API_KEY" in st.secrets:
             os.environ["OPENROUTER_API_KEY"] = st.secrets["OPENROUTER_API_KEY"]
             return True
     except Exception:
         pass                       # no secrets.toml at all, which is fine locally
+    if not os.environ.get("OPENROUTER_API_KEY"):
+        generate.load_dotenv()
     return bool(os.environ.get("OPENROUTER_API_KEY"))
 
 

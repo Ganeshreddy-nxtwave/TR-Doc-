@@ -763,6 +763,37 @@ def _app_function(name):
     return ns[name]
 
 
+def test_app_script_runs_and_renders_step_one():
+    """Compiling app.py proves nothing -- Streamlit runs the script over a
+    websocket, so a runtime error shows as a blank page. Two app bugs have
+    already slipped past py_compile. This executes the script for real."""
+    try:
+        from streamlit.testing.v1 import AppTest
+    except ImportError:
+        print("      (skipped: streamlit not installed)")
+        return
+
+    import os
+    root = Path(__file__).resolve().parent.parent
+    cwd = os.getcwd()
+    os.chdir(root)                     # app.py reads config.yaml relatively
+    try:
+        at = AppTest.from_file(str(root / "app.py"), default_timeout=120)
+        at.run()
+    finally:
+        os.chdir(cwd)
+
+    assert not at.exception, \
+        "app.py raised: " + "; ".join(str(e.value)[:200] for e in at.exception)
+
+    # step 1 must actually render its inputs, not just avoid crashing
+    assert len(at.text_input) >= 1, "no topic input rendered"
+    assert len(at.selectbox) >= 3, "course / learner / produces dropdowns missing"
+    assert len(at.radio) >= 1, "mode radio missing"
+    assert len(at.text_area) >= 1, "sub-topics box missing"
+    assert len(at.button) >= 1, "generate button missing"
+
+
 def test_blocking_reason_always_returns_a_real_bool():
     """Regression: `target and not target.get(...)` returns None when target is
     None, and Streamlit's disabled= goes into a protobuf field that rejects it.

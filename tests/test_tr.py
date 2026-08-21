@@ -571,6 +571,107 @@ def test_system_prompt_assembles_with_no_dangling_placeholders():
     assert "POSITION: this session sits BETWEEN" not in first
 
 
+class _StubClient:
+    """Records the kwargs of each completions call instead of making one."""
+
+    def __init__(self):
+        self.calls = []
+        outer = self
+
+        class _Completions:
+            def create(self, **kwargs):
+                outer.calls.append(kwargs)
+
+                class _M:
+                    content = "# Doc\nbody"
+                    annotations = None
+
+                class _C:
+                    message = _M()
+
+                class _R:
+                    choices = [_C()]
+
+                return _R()
+
+        class _Chat:
+            completions = _Completions()
+
+        self.chat = _Chat()
+
+
+def test_writer_call_sends_an_explicit_token_budget():
+    """Without max_tokens the provider default applies, which caps the doc far
+    below the ~1,000 lines a real session needs. This was the single biggest
+    cause of thin output."""
+    cl = _StubClient()
+    ctx = {
+        "course": "C", "topic": "T", "prev_title": "1. Prev", "next_title": "3. Next",
+        "prev_doc": "prev", "next_doc": "next", "research": "notes",
+        "style": "style guide", "learner_profile": "x", "session_produces": "y",
+        "max_output_tokens": 32000,
+    }
+    generate.write_doc(cl, "some/model", ctx, "answers")
+
+    assert len(cl.calls) == 1
+    assert cl.calls[0].get("max_tokens") == 32000, \
+        "the writer must cap output explicitly, not inherit the provider default"
+
+    # and config.yaml actually carries a value in that range
+    cfg = corpus.load_config()
+    assert cfg.get("max_output_tokens", 0) >= 16000, \
+        "config max_output_tokens is too low for a full doc"
+
+    # falls back to a usable budget rather than None if config omits it
+    cl2 = _StubClient()
+    generate.write_doc(cl2, "some/model", {**ctx, "max_output_tokens": None},
+                       "answers")
+    assert cl2.calls[0].get("max_tokens", 0) >= 16000
+
+
+def test_depth_rules_are_calibrated_to_the_reference_doc():
+    """The prompt is calibrated to the AI-agents reference doc: ~12 sections with
+    deep insides. Guards against drifting thin (the first real output) or heavy
+    (the 1,685-line doc's meta-scaffolding)."""
+    t = generate.prompt("tr_doc.md")
+
+    # the nine patterns adopted from the reference
+    for required in (
+        "named beats",                    # hook structure
+        "escalate",                       # the harder, unpatchable case
+        "what the learner will actually write today",   # components table
+        "piece by piece",                 # incremental assembly
+        "what breaks without it",         # the reason per piece
+        "properties after building it",   # post-build behaviour
+        "named scenarios",                # several runs
+        "negative case",                  # the boundary case
+        "inline, where the choice arises",  # design decisions
+        "discriminator",                  # Try It Yourself close
+        "900 to 1,200 lines",             # explicit calibration
+    ):
+        assert required in t, f"depth rule missing: {required!r}"
+
+    # the meta-scaffolding that made the other reference too heavy
+    for banned in ("verify-flags table", "an agenda", "a coverage ledger",
+                   "a checkpoint", "a key-takeaways list"):
+        assert banned in t, f"the ban on {banned!r} should be stated explicitly"
+    assert "Do NOT add:" in t
+
+    # What's Next survives, since the reference doc wrongly omits it
+    assert "**What's Next** -- required, never omitted" in t
+
+    # house style the reference doc drops must stay required
+    assert "<MultiLineWarning>" in t
+    assert 'target="_blank"' in t
+
+    # every trailing report block the code splits off must be documented here
+    for blk in ("SOURCE ISSUES", "OPEN MARKERS", "CHANGES MADE",
+                "ADDED BEYOND SCOPE"):
+        assert blk in t, f"{blk} not documented in OUTPUT FORMAT"
+        assert generate.TRAILING_RE.search(f"\n{blk}\n"), \
+            f"{blk} documented but the splitter does not match it"
+
+
 def test_job_line_describes_the_actual_run():
     assert "FIRST session" in generate.job_line(
         {"mode": "new", "position": "first"})

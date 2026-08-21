@@ -120,7 +120,8 @@ def write_session(cfg, ctx, docs, answers, baseline, style, notes_md,
     """
     cl = generate.client(cfg)
     full = {**ctx, **docs, "style": style, "research": notes_md,
-            "baseline": baseline}
+            "baseline": baseline,
+            "max_output_tokens": cfg.get("max_output_tokens")}
 
     log("Generating doc...")
     raw = generate.write_doc(cl, cfg["models"]["writer"], full, answers)

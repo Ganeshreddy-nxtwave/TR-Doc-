@@ -93,31 +93,109 @@ The HOUSE STYLE GUIDE supplied below describes how these docs sound: voice,
 sentence length, vocabulary, formatting, how tables and callouts are used. Follow
 it for all of that.
 
-It does NOT decide structure. The existing docs predate the rules above and do
-not follow this section order. Where the style guide and this section order
+It does NOT decide structure. Where the style guide and this section order
 disagree, THIS SECTION ORDER WINS.
 
-Use this order unless told otherwise. Rename sections to fit the subject.
+Use this order. Rename sections to fit the subject -- prefer a title that says
+something ("The Hook: Where Function Calling Stops") over a generic label.
 
-1. Header block -- Course, Topic, Unit ID, Unit Number
-2. Introduction -- what was learned last session, what fails today
-3. Recap -- the previous session's steps as a table
-4. The Hook -- the problem that breaks the old approach, why it breaks, and the
-   question only the new concept answers
-5. The new concept, named and defined, with its parts mapped to things the
-   learner will actually produce
-6. What we will build -- the real-world problem, what the build does about it,
-   and explicitly what it does NOT do
-7. Prerequisites and setup
-8. Steps to build -- first as a numbered overview, then each step in full,
-   every one following rules 3 and 4
-9. Flow summary as a numbered list
-10. Old approach versus new approach, as a table
-11. Try It Yourself -- one concrete extension task, plus a small table of ideas
-12. What's Next
+1.  **Header block** -- Course, Topic, Unit ID, Unit Number.
+2.  **Introduction** -- two or three short paragraphs. What the previous session
+    left the learner able to do, and the one thing that stops working today. Do
+    not define the new concept here. Naming what the session will DO is fine
+    ("we will ask that code one realistic question and watch it fail"); naming
+    what the concept IS is not.
+3.  **Recap** -- the previous session's steps as a table, then a plain-text
+    diagram of the flow as the learner currently knows it, then one sentence
+    naming the row or box that breaks today.
+4.  **The Hook** -- the problem that breaks the old approach, in named beats.
+    See DEPTH; this section carries the session.
+5.  **The concept, named and defined** -- the definition, then a components
+    table, then the named pattern if the concept has one, then a comparison
+    against the old approach. See DEPTH.
+6.  **What we will build** -- the real-world problem, what the build does about
+    it, and explicitly what it does NOT do.
+7.  **Prerequisites and setup.**
+8.  **Steps to build** -- a numbered overview first, then each step in full.
+    Every step follows Rule 3. The session's core mechanism is assembled piece
+    by piece. Design decisions appear inline where they arise. See DEPTH.
+9.  **Running it** -- the mechanism exercised on several named scenarios,
+    including one where the new mechanism is not needed. See DEPTH.
+10. **Flow summary** -- the whole mechanism as a numbered list, one step per line.
+11. **Old approach versus new approach** -- a short closing table. The fuller
+    comparison already appeared in section 5; this one lands it.
+12. **Try It Yourself** -- one concrete extension task, a small table of ideas,
+    and a closing discriminator line. See DEPTH.
+13. **What's Next** -- required, never omitted. Name the session that follows and
+    what it does with what was built here. If a later session automates or
+    replaces this build, say plainly that the learner now understands what that
+    thing does underneath -- that sentence is often the most valuable in the doc.
 
-If the session produces no build, replace steps 7 to 9 with the reasoning chain:
-the problem, the options, the trade-offs, the decision, and how to apply it.
+If the session produces no build, replace 6 to 9 with the reasoning chain: the
+problem, the options, the trade-offs, the decision, and how to apply it.
+
+Do NOT add: a verify-flags table, an agenda, a motivation section, a checkpoint,
+a key-takeaways list, or a coverage ledger. Anything a reviewer needs to check
+goes in the trailing blocks described under OUTPUT FORMAT, not in the doc a
+learner reads.
+
+=== DEPTH ===
+
+The most common failure is a doc that is correct but thin. Thin means it asserts
+where it should demonstrate: it says what "might" go wrong instead of showing
+what does, gives one example where three are needed, and shows finished code
+instead of assembling it.
+
+Length is not the goal, demonstration is -- but a build session of real substance
+runs roughly 900 to 1,200 lines. If your draft is half that, you have summarised
+something that needed showing.
+
+**The Hook is built in named beats, not summarised.** Use these, with real
+headings of your own wording:
+
+- A realistic request a user would actually make, quoted in a callout.
+- *What actually happens* -- a table of what the code does against what results.
+  The last row is the one where the old approach simply stops.
+- *Why it fails* -- the reason, stated so the learner sees it was not a bug. The
+  code did exactly what it was told.
+- **Then escalate.** Give a second, harder version of the request where the old
+  approach cannot be patched even in principle -- where the number of steps, or
+  the shape, cannot be known before running it. This beat is what makes the hook
+  land, and it is the one most often skipped.
+- *The question that changes everything* -- the single question the learner
+  cannot answer, in a callout.
+- *What that forces us to change* -- a table of what must be added, and why each.
+
+**The concept section maps parts to artifacts.** After the definition, give a
+components table whose last column is what the learner will actually write today
+-- the variable, dict or function name. A learner who reads the table knows what
+they are about to type. If the concept has a named pattern, give it its own small
+table. Then compare against the old approach, six rows or more; the contrast is
+what defines the concept.
+
+**The core mechanism is assembled piece by piece.** Do not show the finished
+function and explain it afterwards. Introduce it in pieces of a few lines each.
+For every piece state what it does AND what breaks without it. Then show the
+complete version once, inside `<details>`, and follow it with a short section
+explaining how the assembled whole behaves.
+
+**Show the mechanism's properties after building it.** How it behaves under a
+second condition, and what extending it does NOT change. "Adding another tool
+does not change the loop" teaches more than another paragraph about the loop.
+
+**Run it on several named scenarios,** not one. Include the case where the new
+mechanism turns out not to be needed -- the negative case teaches the boundary
+of the concept better than three positive cases.
+
+**Design decisions go inline, where the choice arises.** Wherever the build could
+reasonably have gone another way, stop and write a short titled subsection: the
+options, what each costs, which one this build takes, and why. Three or more in a
+build session is normal. Do not batch them into one table at the end; a decision
+is a teaching moment at the point the learner meets it.
+
+**Close Try It Yourself on a discriminator.** One line stating how the learner
+can tell they got it wrong -- what they would have built instead. This is worth
+more than another paragraph of instructions.
 
 === SCOPE ===
 
@@ -176,11 +254,22 @@ must carry a link from the RESEARCHED SOURCES section below. A source marked
 
 === OUTPUT FORMAT ===
 
-Output the doc as markdown, and nothing before it. After the doc, if and only
-if there is something to report, append these blocks:
+Output the doc as markdown, and nothing before it.
+
+After the doc, append the blocks below -- only the ones that have something in
+them. Everything a reviewer must check goes here, NOT into the doc a learner
+reads. These blocks are split off automatically and put in the review report.
 
 SOURCE ISSUES
 - one line per bug, inconsistency or error you found in the supplied material
 
 OPEN MARKERS
 - one line per `[NEEDS: ...]` marker you left in the doc, and why
+
+CHANGES MADE
+- revamp and repurpose only: one line per change, and which brief item it
+  satisfies
+
+ADDED BEYOND SCOPE
+- only when sub-topics were supplied: one line per thing you taught that was not
+  on the author's list, and why the build needed it

@@ -16,6 +16,11 @@ baseline: baseline.md    # hand-written student knowledge baseline
 work_dir: work
 out_dir: out
 
+# A full TR doc is long -- the reference doc this was calibrated against is
+# ~1,700 lines / ~21k output tokens. Without an explicit cap the provider
+# default applies and the doc comes back thin.
+max_output_tokens: 32000
+
 # Snippet execution (Rule 5)
 run_timeout_seconds: 30
 

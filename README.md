@@ -142,6 +142,25 @@ courses. The hand-written baseline goes into every generation and into the
 self-check, so "did the doc re-teach something they already know" is a question
 the checker can actually answer.
 
+**Output depth is calibrated to a reference doc, and the calibration is
+tested.** The first generated doc was correct but thin -- 652 lines, a hook that
+listed what *might* go wrong, one three-row design-decision table, finished code
+shown rather than assembled. `prompts/tr_doc.md` is now calibrated to a
+hand-written reference (a 1,027-line AI-agents TR doc): ~13 sections with deep
+insides, roughly 900-1,200 lines. The `=== DEPTH ===` block names the nine
+patterns that make the difference -- the hook's escalation to a case the old
+approach cannot be patched for, a components table mapping concept parts to what
+the learner actually types, piece-by-piece assembly stating what breaks without
+each piece, post-build property sections, several named scenario runs including a
+negative case, and inline design decisions. A test asserts all of it, plus that
+the heavier meta-scaffolding of a second reference (verify-flags table, agenda,
+checkpoint, coverage ledger) stays banned -- so the prompt cannot drift thin or
+bloated unnoticed.
+
+**The writer gets an explicit token budget.** `max_output_tokens: 32000`. Without
+it the provider default applies and caps the doc far below a full session; this
+was the single largest cause of thin output, independent of the prompt.
+
 **Prompt lives in markdown, not Python.** The seven rules, the structure, the
 formatting and language rules are `prompts/tr_doc.md`, injected verbatim. Output
 quality is tuned by editing that file. The code's job is to fill its placeholders

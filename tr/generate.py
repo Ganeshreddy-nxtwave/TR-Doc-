@@ -125,6 +125,9 @@ def write_doc(cl, model, ctx, answers):
         "mode_brief": block("modes", ctx.get("mode") or "new"),
         "position_brief": block("positions", ctx.get("position") or "middle"),
     })
+    # A full TR doc runs 15-25k output tokens. Without an explicit cap the
+    # provider default applies, which is far below that.
+    budget = ctx.get("max_output_tokens") or 32000
     user = (
         section("STUDENT KNOWLEDGE BASELINE (everything the learner already knows, "
                 "across every earlier course -- do not re-teach any of it, and do "
@@ -143,7 +146,7 @@ def write_doc(cl, model, ctx, answers):
         + section("RESEARCHED SOURCES", ctx["research"])
         + section("AUTHOR'S ANSWERS TO YOUR QUESTIONS", answers)
     )
-    return llm(cl, model, system, user)
+    return llm(cl, model, system, user, max_tokens=budget)
 
 
 def self_check(cl, model, doc, prev_doc, research, baseline=None):

@@ -312,10 +312,16 @@ the neighbouring sessions, as usual.
 === FORMATTING ===
 
 - Long code or config inside <details><summary><strong>Code</strong></summary>
-- Callouts, sparingly, one idea each. Use the right one:
-  - <MultiLineNote> for a key insight
-  - <MultiLineWarning> for a trap, a cost, or something that breaks
-  - <MultiLineQuickTip> for a shortcut or a convenience
+- Callouts, sparingly, one idea each. Use the right one for the job:
+  - `<MultiLineNote>` for a key insight
+  - `<MultiLineWarning>` for a trap, a cost, a limit, or something that breaks
+  - `<MultiLineQuickTip>` for a shortcut, a convenience or a debugging habit
+
+  All three are house style -- the existing docs use Note 48 times, Warning 16
+  and QuickTip 11. A previous run used only `<MultiLineNote>`, which reads as
+  off-house-style. Any session worth teaching has at least one trap worth a
+  Warning: a cost, a quota, a silent failure, a value that looks right and is
+  not. Find it and mark it.
 - Tables for anything with parallel structure: parameters, comparisons,
   step lists, design alternatives, symptom and cause
 - Backticks for every identifier, file name, command and literal value
@@ -335,12 +341,22 @@ the neighbouring sessions, as usual.
 === CITATIONS ===
 
 Every factual claim about a library, API, model, parameter, version number or
-standard must carry a link from the RESEARCHED SOURCES section below. This is not
-optional and it is the rule most often missed: a previous run shipped four
-unsourced claims while the research section held twenty-three URLs. If research
-supplied a source, use it. Prefer one tagged `[trusted]`. If research has no
-source for a claim you want to make, either drop the claim or write it as
-`[NEEDS: source]` -- do not assert it bare. A source marked
+standard must carry a link from the RESEARCHED SOURCES section below, in house
+format. This is the rule most often missed, twice measured: one run shipped four
+unsourced claims, and the next used only three of twenty-three researched URLs.
+
+Where a link is required, specifically:
+- the first mention of any API parameter you tell the learner to set
+- the first mention of a version number, model name or package name that came
+  from research rather than from the previous session's doc
+- any statement about what a provider's API guarantees, allows or rejects
+- any claim about what an industry tool does, in the "Why this exists" section
+- the definition of the concept, if a provider or standard defines it
+
+Prefer a source tagged `[trusted]`. Research is gathered at real cost on every
+run; leaving twenty of its sources unused is a waste of it, not restraint. If
+research has no source for a claim you want to make, either drop the claim or
+write `[NEEDS: source]` -- never assert it bare. A source marked
 `[unvetted]` there may still be used, but its link text must end with
 ` (unofficial source)` so the reviewer can see it at a glance.
 

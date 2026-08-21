@@ -786,7 +786,6 @@ def test_depth_rules_are_calibrated_to_the_reference_doc():
         "COPIED CHARACTER-FOR-CHARACTER",               # Rule 6 addendum
         "gemini-2.5-flash",                             # the concrete example
         "completable from this doc alone",              # Try It Yourself
-        "twenty-three URLs",                            # citation rule teeth
         # the concept section needs pressure equal to the build rules, and a
         # floor -- a measured run gave it 6% of the doc
         "not a definition and a table",
@@ -805,6 +804,12 @@ def test_depth_rules_are_calibrated_to_the_reference_doc():
         "that doc is the source and it is authoritative",
         "no TR doc was provided",
         'literally reads "(not supplied)"',
+        # citations must bite per claim, and all three callouts are house style
+        "the first mention of any API parameter",
+        "three of twenty-three researched URLs",
+        "not restraint",
+        "Warning 16",
+        "at least one trap worth a Warning",
         "piece by piece",                 # incremental assembly
         "what breaks without it",         # the reason per piece
         "properties after building it",   # post-build behaviour

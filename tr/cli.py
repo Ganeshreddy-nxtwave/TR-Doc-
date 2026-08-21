@@ -264,6 +264,32 @@ POSITIONS = [
     ("last", "Last session of the course"),
 ]
 
+# Derived from baseline.md, so the options match cohorts that actually exist.
+# Free text still works everywhere; these are the common cases.
+LEARNER_PROFILES = [
+    "knows Python basics, non-native English",
+    "Sem1 Gen AI: uses AI tools and no-code workflows, no Python assumed, "
+    "non-native English",
+    "Sem2 early: Python basics, Colab, REST APIs with Flask, non-native English",
+    "Sem2 mid: builds LLM apps in Python with google-genai and Gradio, "
+    "non-native English",
+    "Sem2 late: comfortable with LangChain, RAG and agents, non-native English",
+    "Sem3: full LLM app stack including evaluation and multi-agent systems, "
+    "non-native English",
+]
+
+# The first two keep the build sections. The rest replace them with the
+# reasoning chain -- see "If the session produces no build" in prompts/tr_doc.md.
+PRODUCES = [
+    ("working code", "working code - a program the learner builds and runs"),
+    ("a working integration",
+     "a working integration - wiring an external API or service"),
+    ("a design", "a design - no code; problem, options, trade-offs, decision"),
+    ("a decision framework",
+     "a decision framework - when to choose what, and why"),
+    ("an analysis", "an analysis - findings from data or a comparison"),
+]
+
 
 def interview(args):
     """Fill in whatever was not passed as a flag. Returns a plan spec dict.

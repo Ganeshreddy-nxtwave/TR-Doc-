@@ -14,7 +14,8 @@ from pathlib import Path
 import streamlit as st
 
 from tr import corpus, pipeline
-from tr.cli import describe, discover_courses, slugify
+from tr.cli import (LEARNER_PROFILES, PRODUCES, describe,
+                    discover_courses, slugify)
 
 st.set_page_config(page_title="TR Doc Generator", page_icon="📘",
                    layout="wide")
@@ -245,12 +246,32 @@ if st.session_state.step == 1:
 
     st.divider()
     col_c, col_d = st.columns(2)
+
+    CUSTOM = "Custom…"
     with col_c:
-        spec["learner"] = st.text_input(
-            "Learner profile", value="knows Python basics, non-native English")
+        picked = st.selectbox("Learner profile", LEARNER_PROFILES + [CUSTOM],
+                              help="Who this doc is written for. Rule 1 is judged "
+                                   "against it, together with baseline.md.")
+        spec["learner"] = (st.text_input("Describe the learner", value="",
+                                         placeholder="level, prior knowledge, "
+                                                     "language comfort")
+                           if picked == CUSTOM else picked)
     with col_d:
-        spec["produces"] = st.text_input("This session produces",
-                                         value="working code")
+        keys = [k for k, _ in PRODUCES]
+        labels = dict(PRODUCES)
+        pick = st.selectbox(
+            "This session produces", keys + [CUSTOM],
+            format_func=lambda k: labels.get(k, k),
+            help="This changes the doc's shape. 'working code' and 'a working "
+                 "integration' keep the build sections — What we will build, "
+                 "Prerequisites, Steps to build, Running it. The other three "
+                 "replace those with a reasoning chain: the problem, the "
+                 "options, the trade-offs, the decision.")
+        spec["produces"] = (st.text_input("Describe the output", value="")
+                            if pick == CUSTOM else pick)
+        if pick in ("a design", "a decision framework", "an analysis"):
+            st.caption("No build: the step-by-step sections are replaced by the "
+                       "reasoning chain.")
 
     # Placement preview: free, no API call, and catches a wrong choice early.
     try:

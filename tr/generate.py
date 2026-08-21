@@ -6,12 +6,35 @@ from pathlib import Path
 PROMPTS = Path("prompts")
 
 
+def load_dotenv(path=".env"):
+    """Read KEY=value lines from .env into the environment, if present.
+
+    Six lines of stdlib instead of a dependency. Real environment variables win,
+    so an explicitly exported key always overrides the file. `.env` is gitignored.
+    """
+    p = Path(path)
+    if not p.exists():
+        return
+    for line in p.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        os.environ.setdefault(key.strip(), val.strip().strip("'\""))
+
+
 def client(cfg):
     from openai import OpenAI
 
+    load_dotenv()
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:
-        raise SystemExit("Set OPENROUTER_API_KEY in your environment.")
+        raise SystemExit(
+            "No OPENROUTER_API_KEY found. Either export it, or put this in a "
+            "file called .env next to config.yaml:\n\n"
+            "    OPENROUTER_API_KEY=sk-or-...\n\n"
+            ".env is gitignored, so it will not be committed."
+        )
     return OpenAI(base_url=cfg["base_url"], api_key=key)
 
 

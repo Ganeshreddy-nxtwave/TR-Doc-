@@ -68,6 +68,28 @@ def reset_to(step):
     st.session_state.step = step
 
 
+def show_failure(message):
+    """Report a failure with the likely cause named, not just the raw text."""
+    st.error(message)
+    low = message.lower()
+    if "no endpoints found" in low or "404" in low:
+        st.warning(
+            "That looks like a model slug that does not exist on OpenRouter. "
+            "Check the three entries under `models:` in `config.yaml` against "
+            "<https://openrouter.ai/models>.", icon="🔧")
+    elif "401" in low or "invalid api key" in low or "no auth" in low:
+        st.warning("The API key was rejected. Check it in Settings → Secrets.",
+                   icon="🔑")
+    elif "429" in low or "rate limit" in low or "quota" in low:
+        st.warning("Rate limited or out of credit on OpenRouter.", icon="⏳")
+    elif "context" in low and ("length" in low or "window" in low):
+        st.warning(
+            "The prompt was too large for this model. The neighbour docs plus a "
+            "slide deck can be very long — try a model with a bigger context "
+            "window, or a session whose previous unit has a TR doc rather than "
+            "only a deck.", icon="📏")
+
+
 def blocking_reason(topic, has_key, target):
     """Whether the generate button is disabled, and why.
 
@@ -264,6 +286,7 @@ elif st.session_state.step == 2:
         ctx = pipeline.build_context(spec, spec["course"], target, prev, nxt,
                                     describe)
 
+        failure = None
         with st.status("Working…", expanded=True) as status:
             try:
                 style = pipeline.read_style(cfg)
@@ -275,13 +298,19 @@ elif st.session_state.step == 2:
                     pipeline.read_baseline(cfg, st.write), style, log=st.write)
             except SystemExit as e:
                 status.update(label="Stopped", state="error")
-                st.error(str(e))
-                st.stop()
+                failure = str(e)
             except Exception as e:
                 status.update(label="Failed", state="error")
-                st.error(f"{type(e).__name__}: {e}")
-                st.stop()
-            status.update(label="Research and questions ready", state="complete")
+                failure = f"{type(e).__name__}: {e}"
+            else:
+                status.update(label="Research and questions ready",
+                              state="complete")
+
+        # Outside the status box on purpose: st.status collapses when it errors,
+        # which would hide the only message explaining what went wrong.
+        if failure:
+            show_failure(failure)
+            st.stop()
 
         st.session_state.artifacts = {"questions": qs, "research": notes,
                                       "ctx": ctx, "docs": docs, "style": style}
@@ -319,17 +348,29 @@ elif st.session_state.step == 3:
     spec = st.session_state.spec
 
     if "doc" not in st.session_state:
+        failure, result = None, None
         with st.status("Generating…", expanded=True) as status:
             try:
                 result = pipeline.write_session(
                     cfg, art["ctx"], art["docs"], st.session_state.answers,
                     pipeline.read_baseline(cfg, st.write), art["style"],
                     art["research"], execute_snippets=execute, log=st.write)
+            except SystemExit as e:
+                status.update(label="Stopped", state="error")
+                failure = str(e)
             except Exception as e:
                 status.update(label="Failed", state="error")
-                st.error(f"{type(e).__name__}: {e}")
-                st.stop()
-            status.update(label="Done", state="complete")
+                failure = f"{type(e).__name__}: {e}"
+            else:
+                status.update(label="Done", state="complete")
+
+        if failure:
+            show_failure(failure)
+            if st.button("← Back to the questions"):
+                del st.session_state["answers"]
+                reset_to(2)
+                st.rerun()
+            st.stop()
         st.session_state.doc = result["doc"]
         st.session_state.report = result["report"]
         st.rerun()

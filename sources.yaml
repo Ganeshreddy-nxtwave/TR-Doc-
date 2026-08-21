@@ -1,16 +1,35 @@
 # Domains treated as trusted. Off-list sources are still cited, but marked
-# "not an official source" in the doc so review is one glance, not a hunt.
+# "not an official source" in the doc so review is one glance.
+#
+# Matching is exact host OR subdomain, so list the BASE domain: `pydantic.dev`
+# covers docs.pydantic.dev and ai.pydantic.dev, while listing only
+# `docs.pydantic.dev` would leave the parent domain untrusted.
 trusted:
-  - docs.anthropic.com
-  - platform.openai.com
+  # model providers
+  - anthropic.com
+  - openai.com
   - ai.google.dev
-  - ai.pydantic.dev
-  - docs.pydantic.dev
-  - python.langchain.com
-  - docs.llamaindex.ai
-  - huggingface.co
-  - arxiv.org
-  - github.com
-  - docs.python.org
-  - modelcontextprotocol.io
+  - deepmind.google
+  - groq.com
+  - mistral.ai
+  - cohere.com
   - openrouter.ai
+  # frameworks and libraries
+  - pydantic.dev
+  - langchain.com
+  - langchain.dev
+  - llamaindex.ai
+  - crewai.com
+  - gradio.app
+  - streamlit.io
+  - flask.palletsprojects.com
+  - ollama.com
+  # code, packages, models
+  - github.com
+  - pypi.org
+  - huggingface.co
+  - docs.python.org
+  # standards and research
+  - arxiv.org
+  - modelcontextprotocol.io
+  - w3.org

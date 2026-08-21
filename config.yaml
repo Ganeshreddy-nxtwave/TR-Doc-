@@ -2,11 +2,11 @@
 base_url: https://openrouter.ai/api/v1
 
 models:
-  # VERIFY these slugs at https://openrouter.ai/models before the first run.
-  # ponytail: not auto-detected -- a wrong slug fails loudly on call 1, which is fine.
-  writer: anthropic/claude-opus-4.1      # long-form doc generation
-  research: perplexity/sonar-reasoning   # web search pass
-  checker: anthropic/claude-sonnet-4.5   # self-check pass
+  # All three verified against https://openrouter.ai/models with a live call.
+  # A wrong slug returns 404 'No endpoints found' on the first request.
+  writer: anthropic/claude-opus-4.1      # long-form doc generation (verified)
+  research: perplexity/sonar             # web search pass (verified)
+  checker: anthropic/claude-sonnet-4.5   # self-check pass (verified)
 
 # Paths
 corpus_ppts: corpus/ppts

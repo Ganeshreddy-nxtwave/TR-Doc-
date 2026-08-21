@@ -693,6 +693,32 @@ def test_trust_matching():
     assert not research.is_trusted("https://notarxiv.org/abs/1", trusted)
 
 
+def test_trust_matching_rejects_typosquats_seen_in_the_wild():
+    """A live research run returned developers-openai.com (hyphen, not dot)
+    alongside the genuine developers.openai.com. A doc citing the squat as
+    official would be worse than citing nothing."""
+    trusted = corpus.trusted_domains("sources.yaml")
+
+    assert research.is_trusted("https://developers.openai.com/api/docs", trusted)
+    assert not research.is_trusted("https://developers-openai.com/docs/x", trusted)
+
+    # the same trick on the other listed providers
+    for squat in ("https://docs-anthropic.com/x",
+                  "https://pydantic-dev.io/x",
+                  "https://github-com.example.net/x",
+                  "https://huggingface-co.net/x",
+                  "https://openai.com.evil.test/x"):
+        assert not research.is_trusted(squat, trusted), squat
+
+    # and the real base domains still pass, including subdomains
+    for good in ("https://openai.com/index/x",
+                 "https://platform.openai.com/docs",
+                 "https://docs.pydantic.dev/latest/",
+                 "https://pydantic.dev/docs/x",
+                 "https://pypi.org/project/pydantic/"):
+        assert research.is_trusted(good, trusted), good
+
+
 def test_downstream_flag_between():
     nxt = {"seq": "5", "unit_number": "45", "title": "Agents", "tr_doc": "c.md"}
     msg = generate.downstream_flag(nxt, "Structured Outputs")

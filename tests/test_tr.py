@@ -684,6 +684,47 @@ def test_blocking_reason_always_returns_a_real_bool():
         assert bool(why) == blocked, "a blocked button must say why"
 
 
+def test_subtopics_reach_the_prompt_and_carry_the_scope_rules():
+    from tr import pipeline
+
+    spec = {"topic": "T", "slug": "t", "mode": "new", "position": "middle",
+            "after": "2", "subtopics": "- A\n- B\n- C"}
+    ctx = pipeline.build_context(spec, "Course", None, SESSIONS[0], SESSIONS[1],
+                                 lambda s: s["title"])
+    assert ctx["subtopics"] == "- A\n- B\n- C", "must survive into context.json"
+
+    # the scope rules live in the base prompt, not behind a placeholder
+    tmpl = generate.prompt("tr_doc.md")
+    assert "REQUIRED SUB-TOPICS" in tmpl
+    assert "minimum, not a ceiling" in tmpl
+    assert "ADDED BEYOND SCOPE" in tmpl
+    assert "must lead into the first sub-topic" in tmpl
+    # and the no-subtopics path is stated, so an empty list is not ambiguous
+    assert "If no sub-topics were supplied" in tmpl
+
+
+def test_trailing_blocks_recognise_every_report_heading():
+    """The writer's report blocks must not leak into the learner-facing doc,
+    whether or not it prefixes them with markdown hashes."""
+    for heading in ("SOURCE ISSUES", "OPEN MARKERS", "CHANGES MADE",
+                    "ADDED BEYOND SCOPE"):
+        for prefix in ("", "## ", "### "):
+            doc, trailing = generate.split_trailing_blocks(
+                f"# Doc\nreal content here\n\n{prefix}{heading}\n- something\n")
+            assert doc == "# Doc\nreal content here", f"{prefix}{heading}"
+            assert heading in trailing
+            assert "something" in trailing
+
+    # a doc with no report blocks is returned whole
+    doc, trailing = generate.split_trailing_blocks("# Doc\njust content")
+    assert doc == "# Doc\njust content" and trailing == ""
+
+    # a heading mentioned mid-prose must not truncate the doc
+    body = "# Doc\nWe list SOURCE ISSUES inline here as prose.\nMore content.\n"
+    doc, trailing = generate.split_trailing_blocks(body)
+    assert "More content." in doc
+
+
 def test_trust_matching():
     trusted = ["docs.anthropic.com", "arxiv.org"]
     assert research.is_trusted("https://docs.anthropic.com/en/api", trusted)

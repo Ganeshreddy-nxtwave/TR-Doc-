@@ -223,6 +223,27 @@ if st.session_state.step == 1:
             height=120)
 
     st.divider()
+
+    raw_subtopics = st.text_area(
+        "Sub-topics this session must cover — optional, one per line",
+        placeholder="Pydantic BaseModel basics\n"
+                    "response_schema with google-genai\n"
+                    "Handling validation failures\n"
+                    "Retrying on malformed output",
+        height=120,
+        help="Leave blank and the tool picks the scope itself from the research. "
+             "Fill it in and every line must be taught, in this order unless a "
+             "different order teaches better. The hook is built to lead into the "
+             "first one, so the doc gets a single through-line. Anything the "
+             "build needs but you did not list is added and reported under "
+             "'ADDED BEYOND SCOPE'.")
+    lines = [ln.strip() for ln in (raw_subtopics or "").splitlines() if ln.strip()]
+    spec["subtopics"] = "\n".join(f"- {ln}" for ln in lines) if lines else None
+    if lines:
+        st.caption(f"{len(lines)} sub-topic(s) — all will be covered, in this "
+                   f"order where it teaches well.")
+
+    st.divider()
     col_c, col_d = st.columns(2)
     with col_c:
         spec["learner"] = st.text_input(

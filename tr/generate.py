@@ -93,6 +93,7 @@ def build_questions(cl, model, ctx):
         f"Job: {job_line(ctx)}\n"
         + section("CURRENT DOC TO REVISE", ctx.get("target_doc"))
         + section("AUTHOR'S CHANGE BRIEF", ctx.get("change_brief"))
+        + section("REQUIRED SUB-TOPICS", ctx.get("subtopics"))
         + section("PREVIOUS SESSION TR DOC", ctx["prev_doc"])
         + section("NEXT SESSION TR DOC", ctx["next_doc"])
         + section("STUDENT KNOWLEDGE BASELINE (everything the learner already knows)",
@@ -137,6 +138,8 @@ def write_doc(cl, model, ctx, answers):
         + section("AUTHOR'S CHANGE BRIEF", ctx.get("change_brief"))
         + section("HOOK FOUNDATION (what the learner arrives knowing)",
                   ctx.get("hook_foundation"))
+        + section("REQUIRED SUB-TOPICS (the author's scope: cover every one)",
+                  ctx.get("subtopics"))
         + section("RESEARCHED SOURCES", ctx["research"])
         + section("AUTHOR'S ANSWERS TO YOUR QUESTIONS", answers)
     )
@@ -153,9 +156,17 @@ def self_check(cl, model, doc, prev_doc, research, baseline=None):
     return llm(cl, model, prompt("self_check.md"), user)
 
 
+TRAILING_RE = re.compile(
+    r"\n#*\s*(SOURCE ISSUES|OPEN MARKERS|CHANGES MADE|ADDED BEYOND SCOPE)\b")
+
+
 def split_trailing_blocks(doc):
-    """Pull SOURCE ISSUES / OPEN MARKERS / CHANGES MADE off the end of the doc."""
-    m = re.search(r"\n(SOURCE ISSUES|OPEN MARKERS|#*\s*CHANGES MADE)\b", doc)
+    """Split the doc from the writer's own trailing report blocks.
+
+    These belong in the report, not the doc a learner reads. Matched with or
+    without markdown heading hashes, since the model uses both.
+    """
+    m = TRAILING_RE.search(doc)
     if not m:
         return doc.strip(), ""
     return doc[:m.start()].strip(), doc[m.start():].strip()

@@ -55,6 +55,7 @@ def build_context(spec, course, target, prev, nxt, describe):
         "after": spec.get("after"),
         "at": spec.get("at"),
         "change_brief": spec.get("change_brief"),
+        "subtopics": spec.get("subtopics"),
         "hook_foundation": spec.get("hook_foundation"),
         "prev_title": describe(prev) if prev else "",
         "next_title": describe(nxt) if nxt else "",

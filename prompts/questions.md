@@ -30,5 +30,8 @@ RULES:
   real, and where it came from.
 - Ask about anything in the previous session's doc that the new session would
   contradict or supersede.
+- If REQUIRED SUB-TOPICS were supplied, ask about anything ambiguous in them:
+  which one is the session's core mechanism, what depth each needs, and whether
+  any of them assumes knowledge the previous session did not cover.
 - Do not ask questions the supplied context already answers. Fewer, sharper
   questions are better than a long list. Aim for at most 6 blocking questions.

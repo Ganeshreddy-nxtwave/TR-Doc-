@@ -119,6 +119,31 @@ Use this order unless told otherwise. Rename sections to fit the subject.
 If the session produces no build, replace steps 7 to 9 with the reasoning chain:
 the problem, the options, the trade-offs, the decision, and how to apply it.
 
+=== SCOPE ===
+
+If a REQUIRED SUB-TOPICS section is supplied below, it is the author's scope for
+this session. Treat it as a minimum, not a ceiling:
+
+- Every listed sub-topic must be genuinely taught, not merely mentioned.
+- Cover them in the order given, unless a different order teaches better. If you
+  reorder, say so in one line and why.
+- You MAY add a step the build genuinely requires -- an import, a setup detail,
+  an error case the code would hit. Do not add material that is merely
+  interesting.
+- The flow summary must account for every listed sub-topic.
+- The hook must lead into the first sub-topic the learner meets, so the doc has
+  one through-line from the problem to the last sub-topic.
+- At the end, under an `ADDED BEYOND SCOPE` heading, list anything you taught
+  that was not on the author's list, one line each with why the build needed it.
+  If you added nothing, write "Nothing added."
+
+If a sub-topic cannot be taught from the previous session's knowledge plus what
+this doc establishes, do not silently drop it. Teach what you can and mark the
+gap `[NEEDS: prerequisite for <sub-topic>]`.
+
+If no sub-topics were supplied, choose the scope yourself from the research and
+the neighbouring sessions, as usual.
+
 === FORMATTING ===
 
 - Long code or config inside <details><summary><strong>Code</strong></summary>

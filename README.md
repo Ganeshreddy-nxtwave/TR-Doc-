@@ -64,6 +64,29 @@ defaults to not executing, so a forgotten setting is never the unsafe outcome;
 hosted docs carry `[UNVERIFIED]` markers with the command to reproduce each one,
 and the report says plainly that no output in that doc is a verified run.
 
+## Sub-topics: telling it what to cover
+
+Optional. Leave it blank and the tool chooses the session's scope itself from the
+research, as before. Fill it in — one sub-topic per line in the app, or
+`--subtopics "a; b; c"` on the CLI — and it becomes the session's scope.
+
+Treated as a **minimum, not a ceiling**:
+
+- every listed sub-topic must be genuinely taught, not just mentioned
+- covered in your order unless a different order teaches better, and a reorder
+  must be explained in one line
+- the hook is built to lead into the first sub-topic, so the doc has one
+  through-line from the opening problem to the last sub-topic
+- the flow summary must account for every one
+- anything the build genuinely needs but you did not list is added and reported
+  under `ADDED BEYOND SCOPE`, one line each with why
+- a sub-topic that cannot be taught from the previous session's knowledge is
+  flagged `[NEEDS: prerequisite for <sub-topic>]` rather than silently dropped
+
+This is what makes the chain read properly: previous session left the learner
+here, these sub-topics move them there, and What's Next hands off to the
+following session.
+
 ## The three modes
 
 `plan` (aliased as `new`) asks what kind of job this is, because the pedagogy

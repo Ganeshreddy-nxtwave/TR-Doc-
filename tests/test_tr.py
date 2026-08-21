@@ -796,6 +796,15 @@ def test_depth_rules_are_calibrated_to_the_reference_doc():
         "How to find them",
         "Understanding X",
         "explained away rather than taught",
+        # the header must be shown, not described -- a run put the COURSE name in
+        # the H1, split Unit ID from Unit Number, and emitted two H1s
+        "The H1 is the SESSION title, never the course name",
+        "exactly ONE H1 in the whole doc",
+        "**Unit ID:** `<id>` | **Unit Number:**",
+        # and the recap-source note must be conditional, not automatic
+        "that doc is the source and it is authoritative",
+        "no TR doc was provided",
+        'literally reads "(not supplied)"',
         "piece by piece",                 # incremental assembly
         "what breaks without it",         # the reason per piece
         "properties after building it",   # post-build behaviour

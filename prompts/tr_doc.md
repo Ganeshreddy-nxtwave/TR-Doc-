@@ -87,11 +87,19 @@ to this run, the rules are general.
 
 7. CONNECT BACKWARD AND FORWARD.
    Open with a recap of the previous session as a table.
-   If no previous-session TR doc was supplied, build that recap from the
-   PREVIOUS SESSION SLIDES section instead, and say in one line that it was
-   derived from the slide deck so a reviewer can check it. If neither was
-   supplied, write the recap heading with `[NEEDS: previous session content]`
-   rather than inventing what was taught. Close with a comparison
+   Where that recap comes from depends on what was actually supplied, and you
+   must check before writing anything about it:
+   - If the PREVIOUS SESSION TR DOC section has content, that doc is the source
+     and it is authoritative. Do NOT add any note about where the recap came
+     from. Do NOT say a doc was unavailable -- a previous run wrongly printed
+     "no TR doc was provided" while a 10,000 character doc sat in its context,
+     which told the reviewer the recap was less trustworthy than it was.
+   - Only if that section literally reads "(not supplied)" do you build the
+     recap from PREVIOUS SESSION SLIDES, and only then add one line saying so.
+   - If both are "(not supplied)", write the recap heading with
+     `[NEEDS: previous session content]` rather than inventing what was taught.
+   Where both a doc and slides are supplied, the doc wins; the slides only fill
+   gaps in it. Close with a comparison
    of the old approach against the new one. If a later session automates or
    replaces what was built here, end by saying the learner now understands what
    that thing is doing underneath.
@@ -108,7 +116,23 @@ disagree, THIS SECTION ORDER WINS.
 Use this order. Rename sections to fit the subject -- prefer a title that says
 something ("The Hook: Where Function Calling Stops") over a generic label.
 
-1.  **Header block** -- Course, Topic, Unit ID, Unit Number.
+1.  **Header block** -- copy this shape exactly, including the two trailing
+    spaces that force the line breaks and the `|` joining Unit ID to Unit
+    Number. The H1 is the SESSION title, never the course name, and there is
+    exactly ONE H1 in the whole doc:
+
+    ```
+    # <Session title>
+
+    **Course:** <course>  
+    **Topic:** <topic>  
+    **Unit ID:** `<id>` | **Unit Number:** <number>
+
+    ---
+    ```
+
+    Do not repeat the title as a second H1 after the rule. Every other heading
+    in the doc is `##` or deeper.
 2.  **Introduction** -- two or three short paragraphs. What the previous session
     left the learner able to do, and the one thing that stops working today. Do
     not define the new concept here. Naming what the session will DO is fine

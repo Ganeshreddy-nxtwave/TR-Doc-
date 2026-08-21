@@ -7,13 +7,14 @@ FILL THESE IN:
 - Session topic: {{topic}}
 - Previous session: {{previous_session}}
 - Next session: {{next_session}}
-- Learner profile: {{learner_profile}}
-- Session produces: {{session_produces}}
 
-The STUDENT KNOWLEDGE BASELINE below lists everything the learner has already
-covered across every earlier course. Rule 1 is judged against it: do not
-re-teach anything in it, and do not use a term from outside it without
-defining it in the same sentence.
+The STUDENT KNOWLEDGE BASELINE below defines the learner. There is no separate
+learner profile. It lists everything they have already covered across every
+earlier course. Rule 1 is judged against it: do not re-teach anything in it, and
+do not use a term from outside it without defining it in the same sentence.
+
+Whether this session has a build is yours to judge from the topic. See
+=== STRUCTURE ===.
 
 The source material, the previous unit's TR doc, the next unit's TR doc, the
 house style guide, the researched sources, and the author's answers to your
@@ -71,7 +72,15 @@ to this run, the rules are general.
 
 6. MATCH THE SOURCE EXACTLY.
    Names, values, order of steps and version numbers must match the source
-   material character for character. If the source has a bug, an error or an
+   material character for character.
+   Concretely, because the general rule has not been enough: model names,
+   package names, function names, parameter names and version numbers are
+   COPIED CHARACTER-FOR-CHARACTER from the PREVIOUS SESSION TR DOC wherever
+   that doc uses them. If it writes `gemini-2.5-flash`, this doc writes
+   `gemini-2.5-flash` -- never a version you recall as being current, and never
+   a value from your own training. Where the previous doc is silent and the
+   research has the value, use the research and cite it. Where neither has it,
+   write `[NEEDS: exact value]`. If the source has a bug, an error or an
    inconsistency, list it in a "SOURCE ISSUES" block at the very end of your
    output -- do not silently correct it in the doc, and do not silently copy it
    either.
@@ -110,29 +119,34 @@ something ("The Hook: Where Function Calling Stops") over a generic label.
     naming the row or box that breaks today.
 4.  **The Hook** -- the problem that breaks the old approach, in named beats.
     See DEPTH; this section carries the session.
-5.  **The concept, named and defined** -- the definition, then a components
-    table, then the named pattern if the concept has one, then a comparison
-    against the old approach. See DEPTH.
-6.  **What we will build** -- the real-world problem, what the build does about
+5.  **Why this exists** -- short. Where this problem shows up in real systems,
+    and what the industry built to solve it. Name real tools and libraries by
+    name. This is what stops the concept feeling like an exercise. Use no
+    statistic unless a supplied source carries one -- never invent a number.
+6.  **The concept, named and defined** -- carries real conceptual weight before
+    any build code appears. See DEPTH for which forms it must reach for.
+7.  **What we will build** -- the real-world problem, what the build does about
     it, and explicitly what it does NOT do.
-7.  **Prerequisites and setup.**
-8.  **Steps to build** -- a numbered overview first, then each step in full.
+8.  **Prerequisites and setup.**
+9.  **Steps to build** -- a numbered overview first, then each step in full.
     Every step follows Rule 3. The session's core mechanism is assembled piece
     by piece. Design decisions appear inline where they arise. See DEPTH.
-9.  **Running it** -- the mechanism exercised on several named scenarios,
+10. **Running it** -- the mechanism exercised on several named scenarios,
     including one where the new mechanism is not needed. See DEPTH.
-10. **Flow summary** -- the whole mechanism as a numbered list, one step per line.
-11. **Old approach versus new approach** -- a short closing table. The fuller
-    comparison already appeared in section 5; this one lands it.
-12. **Try It Yourself** -- one concrete extension task, a small table of ideas,
+11. **Flow summary** -- the whole mechanism as a numbered list, one step per line.
+12. **Old approach versus new approach** -- a short closing table. The fuller
+    comparison already appeared in the concept section; this one lands it.
+13. **Try It Yourself** -- one concrete extension task, a small table of ideas,
     and a closing discriminator line. See DEPTH.
-13. **What's Next** -- required, never omitted. Name the session that follows and
+14. **What's Next** -- required, never omitted. Name the session that follows and
     what it does with what was built here. If a later session automates or
     replaces this build, say plainly that the learner now understands what that
     thing does underneath -- that sentence is often the most valuable in the doc.
 
-If the session produces no build, replace 6 to 9 with the reasoning chain: the
-problem, the options, the trade-offs, the decision, and how to apply it.
+Judge from the topic whether this session has a build. If it does not -- a
+concepts, ethics, comparison or judgement session -- replace 7 to 10 with the
+reasoning chain: the problem, the options, the trade-offs, the decision, and how
+to apply it. Everything else stays.
 
 Do NOT add: a verify-flags table, an agenda, a motivation section, a checkpoint,
 a key-takeaways list, or a coverage ledger. Anything a reviewer needs to check
@@ -166,12 +180,28 @@ headings of your own wording:
   cannot answer, in a callout.
 - *What that forces us to change* -- a table of what must be added, and why each.
 
-**The concept section maps parts to artifacts.** After the definition, give a
-components table whose last column is what the learner will actually write today
--- the variable, dict or function name. A learner who reads the table knows what
-they are about to type. If the concept has a named pattern, give it its own small
-table. Then compare against the old approach, six rows or more; the contrast is
-what defines the concept.
+**Let the concept choose its form.** A concept section that is only prose has
+failed. So has one that is only code. Look at what you are teaching and reach for
+the form that fits it -- more than one usually applies:
+
+| If the concept is... | it needs |
+|---|---|
+| a flow, a pipeline or a loop | a plain-text diagram: the flow before, then the flow after, with the new boxes marked |
+| a shape or a contract | a table of the fields, and what each one guarantees |
+| a choice with no single right answer | a comparison table, six rows or more |
+| unfamiliar or abstract | an analogy from outside software, BEFORE the definition |
+| a mechanism with parts | a components table whose last column is what the learner will actually write -- the variable, dict or function name |
+| a named industry pattern | that pattern as its own small table, named |
+| a claim about an API, parameter or version | a cited link in house format |
+
+The learner should finish the concept section able to say what the thing is, why
+it exists, what its parts are, and how it differs from what they did before --
+all before they have typed a line of the build. **No build code appears until the
+concept section is finished.**
+
+If the concept splits into more than one distinct job, say so and give a table of
+which job each mechanism does. Confusing two jobs is the most common way a
+learner misunderstands a concept.
 
 **The core mechanism is assembled piece by piece.** Do not show the finished
 function and explain it afterwards. Introduce it in pieces of a few lines each.
@@ -192,6 +222,13 @@ reasonably have gone another way, stop and write a short titled subsection: the
 options, what each costs, which one this build takes, and why. Three or more in a
 build session is normal. Do not batch them into one table at the end; a decision
 is a teaching moment at the point the learner meets it.
+
+**Try It Yourself must be completable from this doc alone.** The task may only
+require things this doc actually taught. If the natural extension needs a
+technique you did not cover -- a schema keyword, a library feature, a pattern --
+either teach it in a short subsection first, or choose a different task. A task
+the learner cannot do is worse than no task, and a previous run failed exactly
+here.
 
 **Close Try It Yourself on a discriminator.** One line stating how the learner
 can tell they got it wrong -- what they would have built instead. This is worth
@@ -252,8 +289,13 @@ the neighbouring sessions, as usual.
 
 === CITATIONS ===
 
-Every factual claim about a library, API, model, version number or standard
-must carry a link from the RESEARCHED SOURCES section below. A source marked
+Every factual claim about a library, API, model, parameter, version number or
+standard must carry a link from the RESEARCHED SOURCES section below. This is not
+optional and it is the rule most often missed: a previous run shipped four
+unsourced claims while the research section held twenty-three URLs. If research
+supplied a source, use it. Prefer one tagged `[trusted]`. If research has no
+source for a claim you want to make, either drop the claim or write it as
+`[NEEDS: source]` -- do not assert it bare. A source marked
 `[unvetted]` there may still be used, but its link text must end with
 ` (unofficial source)` so the reviewer can see it at a glance.
 

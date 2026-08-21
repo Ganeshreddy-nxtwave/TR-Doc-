@@ -66,6 +66,61 @@ def section(title, body):
     return f"\n\n===== {title} =====\n{body}\n"
 
 
+def digest(doc, limit=30):
+    """Headings only, for the forward link.
+
+    The next session's doc is needed for one thing: naming what comes after. Sent
+    verbatim it contaminates -- a doc generated with unit 9 (29 mentions of
+    Gradio) in context claimed the PREVIOUS session had taught Gradio. Headings
+    carry everything What's Next needs and nothing it can misattribute.
+    """
+    if not doc:
+        return None
+    heads = [ln.strip() for ln in doc.splitlines()
+             if re.match(r"^#{1,4}\s+\S", ln)]
+    if not heads:
+        first = next((ln.strip() for ln in doc.splitlines() if ln.strip()), "")
+        return first[:200] or None
+    out = heads[:limit]
+    if len(heads) > limit:
+        out.append(f"... and {len(heads) - limit} more headings")
+    return "\n".join(out)
+
+
+def read_exemplars(directory="reference", limit=2):
+    """Worked exemplars: docs whose teaching the writer should imitate.
+
+    A model matches a concrete example far better than it follows prose
+    describing one. Kept to `limit` files because each is sent on every run.
+    """
+    d = Path(directory)
+    if not d.exists():
+        return None
+    files = [p for p in sorted(d.glob("*.md")) if p.name.lower() != "readme.md"]
+    if not files:
+        return None
+    parts = []
+    for p in files[:limit]:
+        parts.append(f"--- EXEMPLAR: {p.stem} ---\n"
+                     + p.read_text(encoding="utf-8", errors="replace"))
+    return "\n\n".join(parts)
+
+
+EXEMPLAR_BRIEF = (
+    "WORKED EXEMPLAR -- a TR doc that got the teaching right.\n"
+    "Match HOW this doc teaches: how its hook escalates to a problem the old\n"
+    "approach cannot be patched for, where it reaches for a plain-text diagram\n"
+    "instead of prose, where it puts an analogy, how it interleaves theory and\n"
+    "code, how it assembles a mechanism in pieces before showing it whole, and\n"
+    "how it runs the finished thing on several named cases.\n"
+    "Do NOT copy its subject, its code, its tools or its section titles. It is a\n"
+    "different session -- only the teaching moves transfer.\n"
+    "Where it disagrees with the STRUCTURE and FORMATTING sections above, THOSE\n"
+    "WIN: this exemplar has no What's Next section, no <MultiLineNote> callouts\n"
+    "and no house-format links, and all three are required of you."
+)
+
+
 def distill_style(cl, model, items):
     """One-time: turn the whole corpus into style-guide.md."""
     body = "".join(section(f"SOURCE: {p.name}", text) for p, text in items)
@@ -95,7 +150,8 @@ def build_questions(cl, model, ctx):
         + section("AUTHOR'S CHANGE BRIEF", ctx.get("change_brief"))
         + section("REQUIRED SUB-TOPICS", ctx.get("subtopics"))
         + section("PREVIOUS SESSION TR DOC", ctx["prev_doc"])
-        + section("NEXT SESSION TR DOC", ctx["next_doc"])
+        + section("NEXT SESSION -- NOT YET TAUGHT (headings only)",
+                  digest(ctx.get("next_doc")))
         + section("STUDENT KNOWLEDGE BASELINE (everything the learner already knows)",
                   ctx.get("baseline"))
         + section("HOUSE STYLE GUIDE", ctx["style"])
@@ -120,8 +176,6 @@ def write_doc(cl, model, ctx, answers):
         "topic": ctx["topic"],
         "previous_session": ctx["prev_title"] or "none -- this is the first session",
         "next_session": ctx["next_title"] or "none -- this is the last session",
-        "learner_profile": ctx.get("learner_profile"),
-        "session_produces": ctx.get("session_produces"),
         "mode_brief": block("modes", ctx.get("mode") or "new"),
         "position_brief": block("positions", ctx.get("position") or "middle"),
     })
@@ -133,9 +187,15 @@ def write_doc(cl, model, ctx, answers):
                 "across every earlier course -- do not re-teach any of it, and do "
                 "not use a term from outside it without defining it)",
                 ctx.get("baseline"))
+        + (section(EXEMPLAR_BRIEF, ctx.get("exemplars"))
+           if ctx.get("exemplars") else "")
         + section("HOUSE STYLE GUIDE", ctx["style"])
-        + section("PREVIOUS SESSION TR DOC (verbatim)", ctx["prev_doc"])
-        + section("NEXT SESSION TR DOC (verbatim)", ctx["next_doc"])
+        + section("PREVIOUS SESSION TR DOC (verbatim) -- this is what the learner "
+                  "already knows. Copy its identifiers exactly.", ctx["prev_doc"])
+        + section("NEXT SESSION -- NOT YET TAUGHT (headings only, for the What's "
+                  "Next link). Nothing here has been taught. Never attribute any "
+                  "of it to the previous session, and never use its tools or "
+                  "libraries in this doc's code.", digest(ctx.get("next_doc")))
         + section("SOURCE MATERIAL: PREVIOUS SESSION SLIDES", ctx.get("prev_ppt"))
         + section("CURRENT DOC TO REVISE", ctx.get("target_doc"))
         + section("AUTHOR'S CHANGE BRIEF", ctx.get("change_brief"))

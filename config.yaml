@@ -13,6 +13,11 @@ corpus_ppts: corpus/ppts
 corpus_tr_docs: corpus/tr_docs
 style_guide: style-guide.md
 baseline: baseline.md    # hand-written student knowledge baseline
+
+# Worked exemplars: TR docs whose TEACHING the writer should imitate. Sent on
+# every write call, so keep the folder small -- one strong exemplar beats three
+# mediocre ones. Set to "" to skip them.
+exemplars: reference
 work_dir: work
 out_dir: out
 

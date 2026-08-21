@@ -629,6 +629,90 @@ def test_writer_call_sends_an_explicit_token_budget():
     assert cl2.calls[0].get("max_tokens", 0) >= 16000
 
 
+def test_next_session_digest_cannot_contaminate():
+    """Regression for a real failure: the next session's doc was injected
+    verbatim, and a generated doc claimed the PREVIOUS session had taught Gradio
+    because unit 9 (29 mentions of it) was sitting in context."""
+    real = Path("corpus/tr_docs/building-llm-applications/"
+                "09-building-ui-for-llm-applications.md")
+    if not real.exists():
+        print("      (skipped: corpus doc not present)")
+        return
+
+    doc = corpus.read_text_file(real)
+    d = generate.digest(doc)
+
+    assert len(d) < len(doc) / 5, "digest must be far smaller than the doc"
+    # headings survive -- What's Next needs to name the topic
+    assert "Building UI for LLM Applications" in d
+    assert "Introduction to Gradio" in d
+    # body prose does not
+    for prose in ("Gradio is an open-source", "pip install", "def ", "```"):
+        assert prose not in d, f"body content leaked into the digest: {prose!r}"
+
+    # the label the writer sees must forbid misattribution
+    full = generate.prompt("tr_doc.md")   # sanity: the doc itself is unchanged
+    assert full
+
+    # a doc with no headings still yields something usable, not a crash
+    assert generate.digest("just a paragraph, no headings").startswith("just a")
+    assert generate.digest(None) is None
+    assert generate.digest("") is None
+
+    # a very long doc is truncated with an honest note
+    many = "\n".join(f"## Heading {i}" for i in range(60))
+    d2 = generate.digest(many, limit=10)
+    assert d2.count("## Heading") == 10
+    assert "50 more headings" in d2, "truncation must be stated, not silent"
+
+
+def test_exemplar_is_loaded_and_bounded():
+    ex = generate.read_exemplars("reference")
+    if ex is None:
+        print("      (skipped: reference/ is empty)")
+        return
+
+    assert "--- EXEMPLAR:" in ex, "each exemplar must be labelled"
+    assert "Worked exemplars" not in ex, "reference/README.md must be excluded"
+
+    # the brief must tell the writer what to take and what to leave
+    assert "Match HOW this doc teaches" in generate.EXEMPLAR_BRIEF
+    assert "Do NOT copy its subject" in generate.EXEMPLAR_BRIEF
+    # and resolve the known conflicts, since the exemplar lacks all three
+    for missing in ("What's Next", "<MultiLineNote>", "house-format links"):
+        assert missing in generate.EXEMPLAR_BRIEF, \
+            f"the brief must say {missing} is still required"
+    assert "THOSE\nWIN" in generate.EXEMPLAR_BRIEF
+
+    # empty or absent folder is not an error -- the rules stand alone
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        assert generate.read_exemplars(d) is None
+    assert generate.read_exemplars("no/such/folder") is None
+
+
+def test_the_two_dropped_inputs_are_gone_everywhere():
+    """Learner profile and 'session produces' were removed: baseline.md defines
+    the learner, and the build-or-not decision is judged from the topic."""
+    tmpl = generate.prompt("tr_doc.md")
+    assert "{{learner_profile}}" not in tmpl
+    assert "{{session_produces}}" not in tmpl
+    flat = " ".join(tmpl.split())
+    assert "There is no separate learner profile" in flat
+    assert "Judge from the topic whether this session has a build" in flat
+
+    # write_doc must not require them either
+    cl = _StubClient()
+    generate.write_doc(cl, "m", {
+        "course": "C", "topic": "T", "prev_title": "1. P", "next_title": "3. N",
+        "prev_doc": "prev", "next_doc": "# H\nbody", "research": "r",
+        "style": "s", "max_output_tokens": 20000,
+    }, "answers")
+    sent = cl.calls[0]["messages"][1]["content"]
+    assert "NOT YET TAUGHT" in sent, "the next-session label must reach the model"
+    assert "body" not in sent, "next-doc body must not be sent"
+
+
 def test_depth_rules_are_calibrated_to_the_reference_doc():
     """The prompt is calibrated to the AI-agents reference doc: ~12 sections with
     deep insides. Guards against drifting thin (the first real output) or heavy
@@ -639,7 +723,17 @@ def test_depth_rules_are_calibrated_to_the_reference_doc():
     for required in (
         "named beats",                    # hook structure
         "escalate",                       # the harder, unpatchable case
-        "what the learner will actually write today",   # components table
+        "what the learner will actually write",         # components table
+        "Let the concept choose its form",              # form selection
+        "only prose has failed",                        # theory/code balance
+        "No build code appears until the concept section is finished",
+        "an analogy from outside software",
+        "a plain-text diagram",
+        "Why this exists",                              # the new section
+        "COPIED CHARACTER-FOR-CHARACTER",               # Rule 6 addendum
+        "gemini-2.5-flash",                             # the concrete example
+        "completable from this doc alone",              # Try It Yourself
+        "twenty-three URLs",                            # citation rule teeth
         "piece by piece",                 # incremental assembly
         "what breaks without it",         # the reason per piece
         "properties after building it",   # post-build behaviour
@@ -788,10 +882,16 @@ def test_app_script_runs_and_renders_step_one():
 
     # step 1 must actually render its inputs, not just avoid crashing
     assert len(at.text_input) >= 1, "no topic input rendered"
-    assert len(at.selectbox) >= 3, "course / learner / produces dropdowns missing"
+    assert len(at.selectbox) >= 2, "course and insert-after dropdowns missing"
     assert len(at.radio) >= 1, "mode radio missing"
     assert len(at.text_area) >= 1, "sub-topics box missing"
     assert len(at.button) >= 1, "generate button missing"
+
+    # the learner-profile and session-produces widgets were deliberately removed
+    labels = " ".join(s.label for s in at.selectbox) + \
+             " ".join(i.label for i in at.text_input)
+    assert "Learner profile" not in labels
+    assert "This session produces" not in labels
 
 
 def test_blocking_reason_always_returns_a_real_bool():

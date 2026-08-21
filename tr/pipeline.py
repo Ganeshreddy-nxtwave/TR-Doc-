@@ -66,8 +66,6 @@ def build_context(spec, course, target, prev, nxt, describe):
         "target_doc_path": target.get("tr_doc") if target else None,
         "next_session": nxt,
         "target_session": target,
-        "learner_profile": spec.get("learner"),
-        "session_produces": spec.get("produces"),
     }
 
 
@@ -121,6 +119,8 @@ def write_session(cfg, ctx, docs, answers, baseline, style, notes_md,
     cl = generate.client(cfg)
     full = {**ctx, **docs, "style": style, "research": notes_md,
             "baseline": baseline,
+            "exemplars": generate.read_exemplars(
+                cfg.get("exemplars", "reference")),
             "max_output_tokens": cfg.get("max_output_tokens")}
 
     log("Generating doc...")

@@ -144,6 +144,34 @@ courses. The hand-written baseline goes into every generation and into the
 self-check, so "did the doc re-teach something they already know" is a question
 the checker can actually answer.
 
+**Pedagogy is taught by exemplar, not by rules describing one.** `reference/`
+holds TR docs whose *teaching* the writer should imitate, injected on every run:
+how the hook escalates, where a diagram beats prose, where the analogy goes, how
+theory and code interleave. A model matches a concrete example far better than
+prose describing one — and rules kept drifting because `style-guide.md` covers
+voice only and is forbidden from prescribing structure. The brief tells the writer
+to take the teaching moves and NOT the subject, code or section titles, and
+resolves the known conflicts: the seed exemplar has no What's Next, no house
+callouts and no house link format, all three of which stay required.
+
+**The concept chooses its own form.** No fixed theory-to-code ratio. A flow wants
+a plain-text diagram; a contract wants a field table; a choice with no single
+answer wants a six-row comparison; something abstract wants an analogy from
+outside software before the definition. Stated plainly in the prompt: a concept
+section that is only prose has failed, and so has one that is only code — and no
+build code appears until the concept section is finished.
+
+**The next session is injected as headings, never verbatim.** A generated doc once
+claimed the previous session had taught Gradio, because the *next* session's doc
+(unit 9, 29 mentions of Gradio) was in context verbatim. `generate.digest()` now
+sends its headings only — 591 chars instead of 10,139 — labelled `NOT YET TAUGHT`
+with an explicit instruction never to attribute it to the previous session. What's
+Next needs the title; it never needed the body.
+
+**Identifiers are copied, not recalled.** The same run wrote `gemini-2.0-flash`
+while the previous session's doc said `gemini-2.5-flash` three times, verbatim, in
+context. Rule 6 now says character-for-character, with that exact example.
+
 **Output depth is calibrated to a reference doc, and the calibration is
 tested.** The first generated doc was correct but thin -- 652 lines, a hook that
 listed what *might* go wrong, one three-row design-decision table, finished code

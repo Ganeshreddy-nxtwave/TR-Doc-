@@ -264,33 +264,6 @@ POSITIONS = [
     ("last", "Last session of the course"),
 ]
 
-# Derived from baseline.md, so the options match cohorts that actually exist.
-# Free text still works everywhere; these are the common cases.
-LEARNER_PROFILES = [
-    "knows Python basics, non-native English",
-    "Sem1 Gen AI: uses AI tools and no-code workflows, no Python assumed, "
-    "non-native English",
-    "Sem2 early: Python basics, Colab, REST APIs with Flask, non-native English",
-    "Sem2 mid: builds LLM apps in Python with google-genai and Gradio, "
-    "non-native English",
-    "Sem2 late: comfortable with LangChain, RAG and agents, non-native English",
-    "Sem3: full LLM app stack including evaluation and multi-agent systems, "
-    "non-native English",
-]
-
-# The first two keep the build sections. The rest replace them with the
-# reasoning chain -- see "If the session produces no build" in prompts/tr_doc.md.
-PRODUCES = [
-    ("working code", "working code - a program the learner builds and runs"),
-    ("a working integration",
-     "a working integration - wiring an external API or service"),
-    ("a design", "a design - no code; problem, options, trade-offs, decision"),
-    ("a decision framework",
-     "a decision framework - when to choose what, and why"),
-    ("an analysis", "an analysis - findings from data or a comparison"),
-]
-
-
 def interview(args):
     """Fill in whatever was not passed as a flag. Returns a plan spec dict.
 
@@ -355,14 +328,6 @@ def interview(args):
             f"What should change? (new outline, changed takeaways, what to "
             f"remove or add)", interactive=ia, allow_blank=True)
 
-    # A dry run only resolves placement, so do not make the author answer
-    # questions whose answers are about to be thrown away.
-    ask_details = ia and not args.dry_run
-    spec["learner"] = args.learner or ask(
-        "Learner profile", default="knows Python basics, non-native English",
-        interactive=ask_details)
-    spec["produces"] = args.produces or ask(
-        "This session produces", default="working code", interactive=ask_details)
     return spec
 
 
@@ -548,10 +513,6 @@ def main(argv=None):
                                           "sequences them itself. Blank lets the "
                                           "tool choose the scope")
         q.add_argument("--slug")
-        q.add_argument("--learner",
-                       help="learner profile: level, prior knowledge, language")
-        q.add_argument("--produces",
-                       help="working code / a design / a decision framework")
         q.add_argument("--non-interactive", action="store_true",
                        help="fail rather than prompt for anything missing")
         q.add_argument("--dry-run", action="store_true",

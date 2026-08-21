@@ -268,12 +268,25 @@ wrote four such sections as prose and produced only two decisions in the whole
 build; those four were the most valuable judgement in the session and it was
 explained away rather than taught.
 
-**Try It Yourself must be completable from this doc alone.** The task may only
-require things this doc actually taught. If the natural extension needs a
-technique you did not cover -- a schema keyword, a library feature, a pattern --
-either teach it in a short subsection first, or choose a different task. A task
-the learner cannot do is worse than no task, and a previous run failed exactly
-here.
+**Try It Yourself must be completable from this doc alone, and you must prove it
+to yourself before writing the task.** This has now failed twice on the same
+point, so do it mechanically rather than by judgement:
+
+1. Draft the task.
+2. List every technique it requires -- every keyword, function, parameter,
+   pattern and idea the learner must use.
+3. For each one, name the section of THIS doc that teaches it. Not "it is
+   obvious", not "they can look it up" -- the section.
+4. If any item has no section, the task is out of scope. Either cut that item
+   from the task, or add the short subsection that teaches it. Then redo step 3.
+
+Two failures to learn from, both real: one task required JSON Schema `if`/`then`
+conditionals, and another required per-question retry logic. Neither was taught
+anywhere in its doc. Both looked like reasonable extensions and both were
+impossible.
+
+A task the learner cannot complete is worse than no task, because they conclude
+the fault is theirs.
 
 **Close Try It Yourself on a discriminator.** One line stating how the learner
 can tell they got it wrong -- what they would have built instead. This is worth

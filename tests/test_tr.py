@@ -766,6 +766,28 @@ def test_the_two_dropped_inputs_are_gone_everywhere():
     assert "body" not in sent, "next-doc body must not be sent"
 
 
+def test_self_check_demands_evidence_before_reporting_a_failure():
+    """A review reported 7 failures of which 4 were false -- including one that
+    contradicted its own fix list. A checker that cries wolf gets ignored, and
+    the real failures ship with it."""
+    c = " ".join(generate.prompt("self_check.md").split())
+
+    # the line that was pressuring it to manufacture failures
+    assert "A review that says everything passed is useless" not in c
+
+    for required in (
+        "Quote the offending text verbatim",       # evidence before FAIL
+        "you do not have a failure -- mark it PASS",
+        "Do not contradict yourself",
+        "inserted automatically by the pipeline",  # do not flag our own markers
+        "IS the placeholder marking",
+        "PASS is the right verdict whenever you cannot evidence a failure",
+        "name the section of THIS doc that teaches it",   # check 7 traceability
+        "Try It Yourself traceability",
+    ):
+        assert required in c, f"self-check rule missing: {required!r}"
+
+
 def test_depth_rules_are_calibrated_to_the_reference_doc():
     """The prompt is calibrated to the AI-agents reference doc: ~12 sections with
     deep insides. Guards against drifting thin (the first real output) or heavy
@@ -810,6 +832,11 @@ def test_depth_rules_are_calibrated_to_the_reference_doc():
         "not restraint",
         "Warning 16",
         "at least one trap worth a Warning",
+        # Try It Yourself completability: a stated rule failed twice, so it is
+        # now a mechanical four-step check
+        "prove it to yourself before writing the task",
+        "name the section of THIS doc that teaches it",
+        "the task is out of scope",
         "piece by piece",                 # incremental assembly
         "what breaks without it",         # the reason per piece
         "properties after building it",   # post-build behaviour

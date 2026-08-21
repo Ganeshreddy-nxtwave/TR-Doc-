@@ -68,6 +68,23 @@ def reset_to(step):
     st.session_state.step = step
 
 
+def blocking_reason(topic, has_key, target):
+    """Whether the generate button is disabled, and why.
+
+    Returns (bool, str). The bool must be a real bool -- Streamlit's `disabled`
+    goes into a protobuf field, so `None` from a short-circuiting `and` raises
+    TypeError rather than reading as False.
+    """
+    if not topic:
+        return True, "Enter a topic to continue."
+    if not has_key:
+        return True, "No OPENROUTER_API_KEY, so nothing can be generated."
+    if target is not None and not target.get("tr_doc"):
+        return True, ("That session has no TR doc, so there is nothing to "
+                      "revise. Use mode **new** instead.")
+    return False, ""
+
+
 # --- state ----------------------------------------------------------------
 
 st.session_state.setdefault("step", 1)
@@ -217,7 +234,7 @@ if st.session_state.step == 1:
             st.error(f"{describe(target)} has no TR doc, so there is nothing to "
                      f"{mode}. Use mode **new** instead.")
 
-    blocked = (not topic) or (not has_key) or (target and not target.get("tr_doc"))
+    blocked, why = blocking_reason(topic, has_key, target)
     if st.button("Research & draft questions", type="primary", disabled=blocked):
         spec["slug"] = slugify(topic)
         spec["course"] = course
@@ -225,8 +242,8 @@ if st.session_state.step == 1:
         st.session_state.sessions = sessions
         st.session_state.step = 2
         st.rerun()
-    if not topic:
-        st.caption("Enter a topic to continue.")
+    if why:
+        st.caption(why)
 
 # ==========================================================================
 # Step 2 -- research, then the questions it must not guess

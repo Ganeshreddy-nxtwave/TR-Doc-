@@ -647,6 +647,43 @@ def test_check_revisable_refuses_a_revamp_with_nothing_to_revise():
     pipeline.check_revisable("new", None, None, label)
 
 
+def _app_function(name):
+    """Pull one function out of app.py without importing it.
+
+    app.py issues Streamlit calls at module scope, so it cannot be imported in a
+    plain test process.
+    """
+    src = (Path(__file__).resolve().parent.parent / "app.py").read_text(
+        encoding="utf-8")
+    start = src.index(f"def {name}")
+    end = src.index("\n\n\n", start)
+    ns = {}
+    exec(src[start:end], ns)
+    return ns[name]
+
+
+def test_blocking_reason_always_returns_a_real_bool():
+    """Regression: `target and not target.get(...)` returns None when target is
+    None, and Streamlit's disabled= goes into a protobuf field that rejects it.
+    A None here crashed the app on every 'new' mode run."""
+    blocking_reason = _app_function("blocking_reason")
+
+    cases = [
+        ("", True, None, True),                        # no topic
+        ("T", False, None, True),                      # no api key
+        ("T", True, None, False),                      # new mode, ready
+        ("T", True, {"tr_doc": "a.md"}, False),        # revamp with a doc
+        ("T", True, {"tr_doc": None}, True),           # revamp, no doc
+        ("T", True, {}, True),                         # revamp, key absent
+    ]
+    for topic, has_key, target, want in cases:
+        blocked, why = blocking_reason(topic, has_key, target)
+        assert blocked is want, f"{(topic, has_key, target)} -> {blocked!r}"
+        assert type(blocked) is bool, \
+            f"must be a real bool, got {type(blocked).__name__} for {target!r}"
+        assert bool(why) == blocked, "a blocked button must say why"
+
+
 def test_trust_matching():
     trusted = ["docs.anthropic.com", "arxiv.org"]
     assert research.is_trusted("https://docs.anthropic.com/en/api", trusted)

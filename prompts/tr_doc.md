@@ -119,10 +119,14 @@ something ("The Hook: Where Function Calling Stops") over a generic label.
     naming the row or box that breaks today.
 4.  **The Hook** -- the problem that breaks the old approach, in named beats.
     See DEPTH; this section carries the session.
-5.  **Why this exists** -- short. Where this problem shows up in real systems,
-    and what the industry built to solve it. Name real tools and libraries by
-    name. This is what stops the concept feeling like an exercise. Use no
-    statistic unless a supplied source carries one -- never invent a number.
+5.  **Why this exists** -- where this problem shows up in real systems, and
+    what the industry built to solve it. Give two or three concrete situations
+    from different domains, not one. Name real tools and libraries, and say what
+    each of them does about this problem -- whole libraries existing for one
+    problem is itself the evidence that the problem is common. Then say what it
+    costs to get this wrong in production. This is what stops the concept
+    feeling like a classroom exercise. Use no statistic unless a supplied source
+    carries one -- never invent a number.
 6.  **The concept, named and defined** -- carries real conceptual weight before
     any build code appears. See DEPTH for which forms it must reach for.
 7.  **What we will build** -- the real-world problem, what the build does about
@@ -199,6 +203,14 @@ it exists, what its parts are, and how it differs from what they did before --
 all before they have typed a line of the build. **No build code appears until the
 concept section is finished.**
 
+**This section is not a definition and a table.** It is the part of the doc that
+makes the build make sense, and it is the part most often skimped. Reach for at
+least three of the forms above, not one. A measured failure to learn from: a
+previous doc gave this section 49 lines out of 796 -- six per cent -- while the
+build steps took sixty-five. The concept and the hook together should be a
+comparable weight to the build, not a preamble to it. If your concept section is
+under a tenth of the doc, you have written a preamble.
+
 If the concept splits into more than one distinct job, say so and give a table of
 which job each mechanism does. Confusing two jobs is the most common way a
 learner misunderstands a concept.
@@ -222,6 +234,15 @@ reasonably have gone another way, stop and write a short titled subsection: the
 options, what each costs, which one this build takes, and why. Three or more in a
 build session is normal. Do not batch them into one table at the end; a decision
 is a teaching moment at the point the learner meets it.
+
+**How to find them.** Every time you are about to write a heading like
+"Understanding X", "Why X matters" or "How X works", stop and ask whether a real
+choice is hiding inside it. Usually one is: a default you accepted, a value you
+picked, a structure you chose over another. If so, write it as a decision
+instead -- the options, the cost of each, which you took, why. A previous doc
+wrote four such sections as prose and produced only two decisions in the whole
+build; those four were the most valuable judgement in the session and it was
+explained away rather than taught.
 
 **Try It Yourself must be completable from this doc alone.** The task may only
 require things this doc actually taught. If the natural extension needs a

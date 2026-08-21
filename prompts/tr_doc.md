@@ -200,17 +200,22 @@ more than another paragraph of instructions.
 === SCOPE ===
 
 If a REQUIRED SUB-TOPICS section is supplied below, it is the author's scope for
-this session. Treat it as a minimum, not a ceiling:
+this session. It is a **coverage contract, not a sequence**. Treat it as a
+minimum, not a ceiling:
 
 - Every listed sub-topic must be genuinely taught, not merely mentioned.
-- Cover them in the order given, unless a different order teaches better. If you
-  reorder, say so in one line and why.
+- **The order is yours to choose, and the listed order carries no meaning.**
+  Sequence them so the session builds: start from what the previous session left
+  the learner able to do, and end where the next session picks up. Each
+  sub-topic must be reachable from what the doc has already established at that
+  point -- never introduce one that depends on a later one. Do not explain or
+  justify your ordering; just order it well.
 - You MAY add a step the build genuinely requires -- an import, a setup detail,
   an error case the code would hit. Do not add material that is merely
   interesting.
 - The flow summary must account for every listed sub-topic.
-- The hook must lead into the first sub-topic the learner meets, so the doc has
-  one through-line from the problem to the last sub-topic.
+- The hook must lead into whichever sub-topic you place first, so the doc has one
+  through-line from the opening problem to the last sub-topic.
 - At the end, under an `ADDED BEYOND SCOPE` heading, list anything you taught
   that was not on the author's list, one line each with why the build needed it.
   If you added nothing, write "Nothing added."

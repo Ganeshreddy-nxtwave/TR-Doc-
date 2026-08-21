@@ -70,13 +70,15 @@ Optional. Leave it blank and the tool chooses the session's scope itself from th
 research, as before. Fill it in — one sub-topic per line in the app, or
 `--subtopics "a; b; c"` on the CLI — and it becomes the session's scope.
 
-Treated as a **minimum, not a ceiling**:
+It is a **coverage contract, not a sequence**, and a **minimum, not a ceiling**:
 
 - every listed sub-topic must be genuinely taught, not just mentioned
-- covered in your order unless a different order teaches better, and a reorder
-  must be explained in one line
-- the hook is built to lead into the first sub-topic, so the doc has one
-  through-line from the opening problem to the last sub-topic
+- **the order you type them in carries no meaning.** The doc sequences them so
+  the session builds: from what the previous session left the learner able to do,
+  toward where the next session picks up. No sub-topic may depend on one that
+  comes later, and the writer is told not to spend words justifying its ordering
+- the hook is built to lead into whichever sub-topic ends up first, so the doc
+  has one through-line from the opening problem to the last sub-topic
 - the flow summary must account for every one
 - anything the build genuinely needs but you did not list is added and reported
   under `ADDED BEYOND SCOPE`, one line each with why

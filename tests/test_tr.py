@@ -633,7 +633,7 @@ def test_depth_rules_are_calibrated_to_the_reference_doc():
     """The prompt is calibrated to the AI-agents reference doc: ~12 sections with
     deep insides. Guards against drifting thin (the first real output) or heavy
     (the 1,685-line doc's meta-scaffolding)."""
-    t = generate.prompt("tr_doc.md")
+    t = " ".join(generate.prompt("tr_doc.md").split())
 
     # the nine patterns adopted from the reference
     for required in (
@@ -794,14 +794,26 @@ def test_subtopics_reach_the_prompt_and_carry_the_scope_rules():
                                  lambda s: s["title"])
     assert ctx["subtopics"] == "- A\n- B\n- C", "must survive into context.json"
 
-    # the scope rules live in the base prompt, not behind a placeholder
-    tmpl = generate.prompt("tr_doc.md")
-    assert "REQUIRED SUB-TOPICS" in tmpl
-    assert "minimum, not a ceiling" in tmpl
-    assert "ADDED BEYOND SCOPE" in tmpl
-    assert "must lead into the first sub-topic" in tmpl
+    # The prompt is hard-wrapped, so any phrase can straddle a line break.
+    # Assert against a whitespace-collapsed view, or a reflow breaks the tests
+    # without anything actually being wrong.
+    flat = " ".join(generate.prompt("tr_doc.md").split())
+    for phrase in (
+        "REQUIRED SUB-TOPICS",
+        "minimum, not a ceiling",
+        "ADDED BEYOND SCOPE",
+        # the list is a coverage contract, not a running order
+        "coverage contract, not a sequence",
+        "The order is yours to choose",
+        "listed order carries no meaning",
+        "never introduce one that depends on a later one",
+        "must lead into whichever sub-topic you place first",
+        "Do not explain or justify your ordering",
+    ):
+        assert phrase in flat, f"scope rule missing: {phrase!r}"
     # and the no-subtopics path is stated, so an empty list is not ambiguous
-    assert "If no sub-topics were supplied" in tmpl
+    # the no-subtopics path is stated too, so an empty list is not ambiguous
+    assert "If no sub-topics were supplied" in flat
 
 
 def test_trailing_blocks_recognise_every_report_heading():

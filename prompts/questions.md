@@ -32,6 +32,8 @@ RULES:
   contradict or supersede.
 - If REQUIRED SUB-TOPICS were supplied, ask about anything ambiguous in them:
   which one is the session's core mechanism, what depth each needs, and whether
-  any of them assumes knowledge the previous session did not cover.
+  any of them assumes knowledge the previous session did not cover. Do NOT ask
+  what order to cover them in -- that is decided by what builds best, not by the
+  author.
 - Do not ask questions the supplied context already answers. Fewer, sharper
   questions are better than a long list. Aim for at most 6 blocking questions.

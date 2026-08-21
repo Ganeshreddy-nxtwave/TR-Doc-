@@ -233,16 +233,17 @@ if st.session_state.step == 1:
                     "Retrying on malformed output",
         height=120,
         help="Leave blank and the tool picks the scope itself from the research. "
-             "Fill it in and every line must be taught, in this order unless a "
-             "different order teaches better. The hook is built to lead into the "
-             "first one, so the doc gets a single through-line. Anything the "
-             "build needs but you did not list is added and reported under "
+             "Fill it in and every line must be genuinely taught. Order does not "
+             "matter — the doc sequences them so the session builds from where "
+             "the previous one ended toward where the next one starts. Anything "
+             "the build needs but you did not list is added and reported under "
              "'ADDED BEYOND SCOPE'.")
     lines = [ln.strip() for ln in (raw_subtopics or "").splitlines() if ln.strip()]
     spec["subtopics"] = "\n".join(f"- {ln}" for ln in lines) if lines else None
     if lines:
-        st.caption(f"{len(lines)} sub-topic(s) — all will be covered, in this "
-                   f"order where it teaches well.")
+        st.caption(f"{len(lines)} sub-topic(s) — all will be covered. The "
+                   f"order you type them in does not matter; the doc sequences "
+                   f"them to build from the previous session toward the next.")
 
     st.divider()
     col_c, col_d = st.columns(2)

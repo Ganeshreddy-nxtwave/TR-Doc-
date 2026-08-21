@@ -322,7 +322,7 @@ def interview(args):
             "hook_foundation": None,
             # Optional scope. Blank means the tool chooses the scope itself.
             "subtopics": args.subtopics or (
-                ask("Sub-topics to cover (optional, separate with ';')",
+                ask("Sub-topics to cover, any order (optional, separate with ';')",
                     interactive=ia and not args.dry_run, allow_blank=True))}
     if spec["subtopics"]:
         spec["subtopics"] = "\n".join(
@@ -544,8 +544,9 @@ def main(argv=None):
         q.add_argument("--change-brief", help="what to change, for revamp or "
                                              "repurpose")
         q.add_argument("--subtopics", help="sub-topics this session must cover, "
-                                          "separated by ';'. Optional -- blank "
-                                          "lets the tool choose the scope")
+                                          "separated by ';'. Any order -- the doc "
+                                          "sequences them itself. Blank lets the "
+                                          "tool choose the scope")
         q.add_argument("--slug")
         q.add_argument("--learner",
                        help="learner profile: level, prior knowledge, language")

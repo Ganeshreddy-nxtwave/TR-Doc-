@@ -55,8 +55,17 @@ NO_EXEC_NOTE = (
 )
 
 
+MISSING_NAME_RE = re.compile(r"NameError: name '([^']+)' is not defined")
+
+
 def verify(markdown, timeout=30, execute=True):
     """Append a real-output block after every runnable snippet.
+
+    Snippets ACCUMULATE, like cells in a notebook. A doc that assembles a
+    mechanism piece by piece -- which the prompt requires -- produces snippets
+    that only run in the context of the ones before them. Running each in
+    isolation made every continuation piece fail with NameError and put a
+    traceback for perfectly good code into the learner's doc.
 
     `execute=False` runs nothing and marks every snippet unverified. That is the
     right setting anywhere the generated code should not be executed -- a hosted
@@ -66,6 +75,9 @@ def verify(markdown, timeout=30, execute=True):
     """
     results = []
     pieces, cursor = [], 0
+    accumulated = []          # code of every snippet that ran cleanly
+    prior_out = ""            # stdout those snippets already produced
+    live_code = []            # snippets we could not run, for dependency blame
 
     for n, m in enumerate(BLOCK_RE.finditer(markdown), 1):
         code = m.group(1)
@@ -79,6 +91,7 @@ def verify(markdown, timeout=30, execute=True):
 
         if is_live(code):
             results.append({"n": n, "status": "live", "err": ""})
+            live_code.append(code)
             pieces.append(
                 "\n\n> `[UNVERIFIED]` This snippet calls a live model API, so the\n"
                 "> output is not reproducible and was not generated here. Run it and\n"
@@ -87,13 +100,33 @@ def verify(markdown, timeout=30, execute=True):
             )
             continue
 
-        r = run_snippet(code, timeout)
+        r = run_snippet("\n".join(accumulated + [code]), timeout)
         r["n"] = n
+
+        # A name defined only inside a live snippet can never resolve here. That
+        # is not a broken example -- it is a consequence of not calling the API.
+        if r["status"] == "error":
+            missing = MISSING_NAME_RE.search(r["err"] or "")
+            if missing and any(missing.group(1) in c for c in live_code):
+                r = {"n": n, "status": "live_dependent", "out": "",
+                     "err": missing.group(1)}
+
         results.append(r)
 
         if r["status"] == "ok":
-            body = r["out"] if r["out"] else "(ran successfully, printed nothing)"
+            accumulated.append(code)
+            fresh = r["out"][len(prior_out):] if r["out"].startswith(prior_out) \
+                else r["out"]
+            prior_out = r["out"]
+            body = fresh.strip() or "(ran successfully, printed nothing)"
             pieces.append(f"\n\nOutput of a real run:\n\n```text\n{body}\n```\n")
+        elif r["status"] == "live_dependent":
+            pieces.append(
+                f"\n\n> `[UNVERIFIED]` This snippet uses `{r['err']}`, which comes\n"
+                f"> from a live model call above, so it was not run here. Run the\n"
+                f"> notebook in order and paste your real output below.\n\n"
+                "```text\n[UNVERIFIED - paste the output of your run]\n```\n"
+            )
         elif r["status"] == "missing_dep":
             pieces.append(
                 f"\n\n> `[UNVERIFIED]` Could not run here: `{r['err']}` is not\n"
@@ -117,10 +150,12 @@ def summarise(results):
     counts = {}
     for r in results:
         counts[r["status"]] = counts.get(r["status"], 0) + 1
-    order = ["ok", "live", "not_executed", "missing_dep", "error", "timeout"]
+    order = ["ok", "live", "live_dependent", "not_executed", "missing_dep",
+             "error", "timeout"]
     label = {
         "ok": "executed, real output inserted",
         "live": "live API call, marked UNVERIFIED",
+        "live_dependent": "needs a value from a live call, marked UNVERIFIED",
         "not_executed": "not run (execution off here), marked UNVERIFIED",
         "missing_dep": "dependency missing, marked UNVERIFIED",
         "error": "failed to run, error shown",

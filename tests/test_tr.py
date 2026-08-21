@@ -4,6 +4,7 @@ Covers the logic that can be wrong silently: snippet classification, real
 execution and splicing, neighbour resolution, and domain trust matching.
 No network, no API key, no LLM calls.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -30,6 +31,58 @@ def test_runs_offline_snippet_and_inserts_real_output():
     assert "Output of a real run" in out
     assert "```text\n4\n```" in out, out
     assert "More prose." in out
+
+
+def test_snippets_accumulate_like_notebook_cells():
+    """The prompt requires the core mechanism be assembled piece by piece, so
+    later snippets only run in the context of earlier ones. Running each in
+    isolation put NameError tracebacks for correct code into the learner's doc --
+    4 of 12 snippets in a real generated doc."""
+    md = ("```python\ndef greet(name):\n    return 'hi ' + name\n```\n\n"
+          "prose\n\n"
+          "```python\nprint(greet('world'))\n```\n")
+    out, results = runner.verify(md, timeout=25)
+
+    assert [r["status"] for r in results] == ["ok", "ok"], \
+        f"continuation snippet should run, got {[r['status'] for r in results]}"
+    assert "hi world" in out
+    assert "NameError" not in out
+
+    # the second block must show ONLY its own output, not replay the first's
+    md2 = ("```python\nprint('first')\n```\n\n"
+           "```python\nprint('second')\n```\n")
+    out2, res2 = runner.verify(md2, timeout=25)
+    assert [r["status"] for r in res2] == ["ok", "ok"]
+    blocks = re.findall(r"Output of a real run:\n\n```text\n(.*?)\n```", out2,
+                        re.S)
+    assert blocks == ["first", "second"], f"output bled between blocks: {blocks}"
+
+    # a genuinely broken snippet is still reported as an error
+    md3 = "```python\nx = 1\n```\n\n```python\nraise ValueError('boom')\n```\n"
+    _, res3 = runner.verify(md3, timeout=25)
+    assert res3[1]["status"] == "error"
+
+
+def test_snippet_needing_a_live_value_is_not_reported_as_broken():
+    """A name that only exists inside a live API call can never resolve offline.
+    That is a consequence of not calling the API, not a broken example, and must
+    not surface as a traceback."""
+    md = ("```python\n"
+          "from google import genai\n"
+          "client = genai.Client(api_key='x')\n"
+          "response = client.models.generate_content(model='m', contents='hi')\n"
+          "```\n\n"
+          "```python\nprint(response.text)\n```\n")
+    out, results = runner.verify(md, timeout=25)
+
+    assert results[0]["status"] == "live", "the API call itself is a live snippet"
+    assert results[1]["status"] == "live_dependent", results[1]
+    assert "comes" in out and "live model call above" in out
+    assert "Traceback" not in out, "must not show a traceback for this"
+    assert "response" in results[1]["err"], "should name the missing value"
+
+    summary = runner.summarise(results)
+    assert "needs a value from a live call" in summary
 
 
 def test_live_snippet_is_marked_not_run():

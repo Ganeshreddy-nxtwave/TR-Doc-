@@ -212,6 +212,14 @@ existing `fill()` placeholders. Adding a mode or a placement is a new markdown
 file, not a code change. An unknown name fails loudly and lists the valid ones,
 so a typo can never produce a doc silently missing its instructions for the run.
 
+**A finished doc hits disk before anything else.** A full-depth run on the
+writer model takes roughly 25 minutes and costs real money. Streamlit's
+`session_state` dies with the websocket, so a sleeping laptop or a network blip
+would otherwise destroy a paid generation. The doc and report are written to
+`work/<slug>/` the moment they exist, and step 3 recovers them rather than
+generating again. The download buttons are still how you take the output away --
+this is insurance, not the delivery path.
+
 **Placement is checkable before anything exists.** `plan --dry-run` resolves the
 neighbours and stops -- no style guide, no API key, no network needed. It prints
 which doc the recap will be built from and which doc you will have to update

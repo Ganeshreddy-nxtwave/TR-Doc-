@@ -846,14 +846,25 @@ def _app_function(name):
     """Pull one function out of app.py without importing it.
 
     app.py issues Streamlit calls at module scope, so it cannot be imported in a
-    plain test process.
+    plain test process. The globals these helpers close over are supplied here.
     """
     src = (Path(__file__).resolve().parent.parent / "app.py").read_text(
         encoding="utf-8")
-    start = src.index(f"def {name}")
-    end = src.index("\n\n\n", start)
-    ns = {}
-    exec(src[start:end], ns)
+    ns = {"Path": Path, "corpus": corpus, "generate": generate}
+    # Some helpers call each other (load_generated -> generated_dir), so exec
+    # every candidate into one shared namespace rather than isolating each.
+    for fname in ("generated_dir", "save_generated", "load_generated",
+                  "blocking_reason", "digest_for_test"):
+        marker = f"def {fname}"
+        if marker not in src:
+            continue
+        start = src.index(marker)
+        end = src.index("\n\n\n", start)
+        exec(src[start:end], ns)
+    if name not in ns:                     # anything not in the list above
+        start = src.index(f"def {name}")
+        end = src.index("\n\n\n", start)
+        exec(src[start:end], ns)
     return ns[name]
 
 
@@ -892,6 +903,32 @@ def test_app_script_runs_and_renders_step_one():
              " ".join(i.label for i in at.text_input)
     assert "Learner profile" not in labels
     assert "This session produces" not in labels
+
+
+def test_generated_output_survives_a_lost_connection():
+    """A full-depth run costs real money and takes ~25 minutes. The doc must hit
+    disk before the rerun, so a dropped websocket cannot destroy it and the app
+    never pays twice for the same generation."""
+    import shutil
+
+    save = _app_function("save_generated")
+    load = _app_function("load_generated")
+    where = _app_function("generated_dir")
+
+    slug = "__pytest_recovery__"
+    try:
+        assert load(slug) == (None, None), "nothing saved yet"
+
+        save(slug, "# Doc\nreal content", "# Report\nfindings")
+        doc, report = load(slug)
+        assert doc == "# Doc\nreal content"
+        assert report == "# Report\nfindings"
+
+        # overwriting is fine -- a re-run replaces rather than appends
+        save(slug, "# Doc v2", "# Report v2")
+        assert load(slug)[0] == "# Doc v2"
+    finally:
+        shutil.rmtree(where(slug), ignore_errors=True)
 
 
 def test_blocking_reason_always_returns_a_real_bool():

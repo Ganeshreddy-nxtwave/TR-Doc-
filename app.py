@@ -96,6 +96,33 @@ def show_failure(message):
             "only a deck.", icon="📏")
 
 
+def generated_dir(slug):
+    cfg = corpus.load_config()
+    return Path(cfg["work_dir"]) / slug
+
+
+def save_generated(slug, doc, report):
+    """Write the finished doc and report to disk immediately.
+
+    Insurance, not output: the download buttons are still the way you take it
+    away. This exists so a dropped connection cannot destroy a paid generation.
+    """
+    d = generated_dir(slug)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "doc.md").write_text(doc, encoding="utf-8")
+    (d / "report.md").write_text(report, encoding="utf-8")
+
+
+def load_generated(slug):
+    """Recover a doc a previous run already paid for, if it is still on disk."""
+    d = generated_dir(slug)
+    doc, report = d / "doc.md", d / "report.md"
+    if doc.exists() and report.exists():
+        return (doc.read_text(encoding="utf-8"),
+                report.read_text(encoding="utf-8"))
+    return None, None
+
+
 def blocking_reason(topic, has_key, target):
     """Whether the generate button is disabled, and why.
 
@@ -368,6 +395,15 @@ elif st.session_state.step == 3:
     art = st.session_state.artifacts
     spec = st.session_state.spec
 
+    # A previous attempt may have finished and then lost its connection. Never
+    # re-run a paid generation that already succeeded.
+    if "doc" not in st.session_state:
+        saved_doc, saved_report = load_generated(spec["slug"])
+        if saved_doc:
+            st.session_state.doc, st.session_state.report = saved_doc, saved_report
+            st.info("Recovered a doc this session had already generated — no "
+                    "second generation was run.", icon="♻")
+
     if "doc" not in st.session_state:
         failure, result = None, None
         with st.status("Generating…", expanded=True) as status:
@@ -392,6 +428,10 @@ elif st.session_state.step == 3:
                 reset_to(2)
                 st.rerun()
             st.stop()
+        # Persist BEFORE the rerun. A full-depth Opus run costs real money and
+        # takes ~25 minutes; session_state dies with the websocket, so a laptop
+        # sleeping or a network blip would otherwise throw the whole run away.
+        save_generated(spec["slug"], result["doc"], result["report"])
         st.session_state.doc = result["doc"]
         st.session_state.report = result["report"]
         st.rerun()
